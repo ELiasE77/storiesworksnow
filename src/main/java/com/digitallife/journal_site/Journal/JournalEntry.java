@@ -1,45 +1,32 @@
 package com.digitallife.journal_site.Journal;
 
+
 import com.digitallife.journal_site.user.User;
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
-import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "journal_entries")
 public class JournalEntry {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(nullable = false)
     private String content;
-    private LocalDate entryDate;
+
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+
+    @Column
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    public JournalEntry() {
-        this.entryDate = LocalDate.now();
-    }
-
-    public JournalEntry(String content, User user) {
-        this.content = content;
-        this.user = user;
-        this.entryDate = LocalDate.now();
-    }
-
-    // ************************************* Getters and setters ******************************************************
-
-    public Optional<User> getUser() {
-        return Optional.ofNullable(user);
-    }
-
-    public void setUser(Optional<User> user) {
-        this.user = user.orElse(null);
-    }
-
-
+    // ************************************ Getters and setters ********************************************************
     public Long getId() {
         return id;
     }
@@ -56,14 +43,23 @@ public class JournalEntry {
         this.content = content;
     }
 
-    public LocalDate getEntryDate() {
-        return entryDate;
+    public LocalDateTime getTimestamp() {
+        return timestamp;
     }
 
-    public void setEntryDate(LocalDate entryDate) {
-        this.entryDate = entryDate;
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
+
 
 
 

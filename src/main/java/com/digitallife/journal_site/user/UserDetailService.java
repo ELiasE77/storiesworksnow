@@ -1,9 +1,11 @@
 package com.digitallife.journal_site.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -13,6 +15,11 @@ public class UserDetailService implements UserDetailsService {
 
     @Autowired
     private UserRepository repository;
+
+    public User findByUsername(String username) {
+        Optional<User> user = repository.findByUsername(username);
+        return user.orElse(null);  // Return the user if present, otherwise return null
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
