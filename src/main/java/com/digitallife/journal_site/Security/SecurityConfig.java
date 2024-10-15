@@ -32,33 +32,19 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/register/user", "/home").permitAll();
-                    registry.anyRequest().authenticated();
+                    registry.requestMatchers("/register/user", "/home", "/css/**", "/images/**", "/js/**").permitAll(); //all pages that are accessible without logging in
+                    registry.anyRequest().authenticated(); // all other pages are only accessible after logging in
                 })
 
                 .formLogin(httpSecurityFormLoginConfigurer -> {
                     httpSecurityFormLoginConfigurer
-                            .loginPage("/login")
-                            .successHandler(new AuthenticationSuccesHandler())
+                            .successHandler(new AuthenticationSuccesHandler()) //this allows the
                             .permitAll();
                 })
                 .build();
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails normalUser = User.builder()
-//                .username("user")
-//                .password("$2a$12$1Z1oiXiaVVukCUodbBWgP.Zo1AfWFfUwSrUppCLgF.BG/WmptMLGa")
-//                .roles("USER")
-//                .build();
-//        UserDetails adminUser = User.builder()
-//                .username("admin")
-//                .password("1234")
-//                .roles("ADMIN")
-//                .build();
-//        return new InMemoryUserDetailsManager(normalUser, adminUser);
-//    }
+
 
     @Bean
     public UserDetailsService userDetailsService() {

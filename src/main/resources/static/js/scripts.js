@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const contentInput = document.getElementById('journal-content');
     const entriesDiv = document.getElementById('journal-entries');
 
+
+
     // Fetch and display all journal entries on page load
     fetchEntries();
 

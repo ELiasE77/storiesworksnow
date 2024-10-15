@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Life</title>
-    <link rel="stylesheet" href="/static/css/home.css">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
 </head>
 <body>
 
@@ -15,8 +15,8 @@
             <ul>
                 <li><a href="#home">Home</a></li>
                 <li><a href="#services">Services</a></li>
-                <li><a href="#login">Login</a></li>
-                <li><a href="#register">Register</a></li>
+                <li><a href="http://localhost:8080/login">Login</a></li>
+                <li><a href="#http://localhost:8080/register">Register</a></li>
             </ul>
         </nav>
     </div>
@@ -26,7 +26,7 @@
     <div class="container">
         <h2>Journal</h2>
         <p>Your platform for sharing and creating journals</p>
-        <a href="https://localhost:8080/index" class="cta">Create Journal Entry</a>
+        <a href="https://localhost:8080/journaling" class="cta">Create Journal Entry</a>
     </div>
 </section>
 
@@ -43,7 +43,7 @@
         </div>
         <div class="service-item">
             <h3>Share your stories</h3>
-            <p>Share your journal entries with others in hopes of finding people in similair situations.</p>
+            <p>Share your journal entries with others in hopes of finding people in similar situations.</p>
         </div>
     </div>
 </section>
@@ -54,8 +54,8 @@
         <ul>
             <li><a href="#home">Home</a></li>
             <li><a href="#services">Services</a></li>
-            <li><a href="#login">Login</a></li>
-            <li><a href="#register">register</a></li>
+            <li><a href="http://localhost:8080/login">Login</a></li>
+            <li><a href="http://localhost:8080/register">register</a></li>
         </ul>
     </div>
 </footer>

@@ -12,7 +12,7 @@ public class AuthenticationSuccesHandler extends SavedRequestAwareAuthentication
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
-        setTargetUrlParameter("/home");
+        setTargetUrlParameter("/journal");
         super.onAuthenticationSuccess(request, response, authentication);
     }
 }

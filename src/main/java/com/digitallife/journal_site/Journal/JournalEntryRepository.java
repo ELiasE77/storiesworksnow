@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long> {
     // Fetch journal entries for a specific user, ordered by entryDate in descending order
-    List<JournalEntry> findByUserOrderByEntryDateDesc(Optional<User> user);
+    List<JournalEntry> findByUser(User user);
 }
 
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+// used for storing new users to the database and sending the encoded password to the database
 @RestController
 public class RegistrationController {
 

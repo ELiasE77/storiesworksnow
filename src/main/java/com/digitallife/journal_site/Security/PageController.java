@@ -16,8 +16,8 @@ public class PageController {
         return "login";
     }
 
-    @GetMapping("/JournalEntry")
-    public String showJournalPage() {
-        return "index";
+    @GetMapping("/journaling")
+    public String showJournalingPage() {
+        return "journaling";
     }
 }
