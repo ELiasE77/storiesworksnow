@@ -66,7 +66,11 @@
     </div>
   </div>
 
-  <a href="/journal" class="cancel-button">Cancel</a> <!-- Link to go back to journal page -->
+  <div id="loading-indicator" style="display: none;"> <!-- shows when the user is generating an image -->
+    <p>Generating image, please wait...</p>
+  </div>
+
+  <a href="/journal/home" class="cancel-button">Cancel</a> <!-- Link to go back to journal page -->
 </div>
 
 <script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>

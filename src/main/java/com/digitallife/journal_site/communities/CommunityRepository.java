@@ -18,4 +18,6 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
 
     // Search communities by name
     List<Community> findByNameContainingIgnoreCase(String name);
+
+    List<Community> findAll();
 }

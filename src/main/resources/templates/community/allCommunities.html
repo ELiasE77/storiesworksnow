@@ -24,18 +24,18 @@
         <div class="community-list">
             <ul>
                 <!-- loop through each community sent in the communityController class function showCommunityPage()-->
-                <li th:each="entry : ${entries}" class="journal-entry">
-                    <div class="story-item">
-                        <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image" th:if="${entry.image}"/>
+                <li th:each="community : ${communities}" class="community-item">
+                    <a th:href="@{'/communities/' + ${community.id}}" class="community-link">
+                        <div class="community-details">
+                            <h3 th:text="${community.name}"></h3>
+                            <p th:text="'Members: ' + ${#lists.size(community.users)}"></p> <!-- Show the number of members -->
 
-                        <div id="story-content">
-                            <h3 th:text="${entry.title}" class="journal-title"></h3>
-                            <h4 th:text="${entry.user.username}" class="journal-username"></h4> <!-- Display the username -->
-                            <p th:text="${entry.content}" class="journal-text"></p> <!-- Display journal content -->
-                            <small th:text="'Posted on: ' + ${#temporals.formatISO(entry.timestamp)}" class="journal-timestamp"></small>
-
+                            <!-- Join form -->
+                            <form th:action="@{'/communities/join/' + ${community.id}}" method="post">
+                                <button type="submit" class="join-button">Join</button>
+                            </form>
                         </div>
-                    </div>
+                    </a>
                 </li>
             </ul>
         </div>

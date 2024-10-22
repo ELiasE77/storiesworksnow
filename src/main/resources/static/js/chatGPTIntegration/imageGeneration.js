@@ -19,7 +19,15 @@ async function generateImageFromJournalEntry(text) {
 // Button click handler for generate image button
 document.getElementById('generate-image').addEventListener('click', async function() {
     const journalText = document.getElementById('journal-content').value;
+    const generateButton = document.getElementById('generate-image');
+    const loadingIndicator = document.getElementById('loading-indicator');
+
+
     if (journalText) {
+        // Show loading indicator and disable button
+        loadingIndicator.style.display = 'block';
+        generateButton.disabled = true;
+
         try {
             const base64Image = await generateImageFromJournalEntry(journalText);
 
@@ -31,6 +39,10 @@ document.getElementById('generate-image').addEventListener('click', async functi
             document.getElementById('imageUrl').value = base64Image;
         } catch (error) {
             alert('Failed to generate image. Please try again.');
+        } finally {
+            // Hide loading indicator and re-enable button
+            loadingIndicator.style.display = 'none';
+            generateButton.disabled = false;
         }
     } else {
         alert('Please write something in the journal first.');
