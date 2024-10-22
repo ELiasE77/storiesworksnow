@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Navbar</title>
+</head>
+<body>
+<div th:fragment="navbar">
+    <nav>
+        <ul>
+            <li><a th:href="@{/home}">Home</a></li>
+            <li><a th:href="@{/journal}">Journal Entry</a></li>
+            <li><a th:href="@{/journal/sharePage}">Social</a></li>
+            <li><a th:href="@{/journal/home}">Your Entries</a></li>
+            <li><a th:href="@{/communities/user}">Your Communities</a></li>
+            <li><a th:href="@{/communities/communityOverview}">Discover Communities</a></li>
+            <li style="float: right"><a th:href="@{/profile}">Profile</a></li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
