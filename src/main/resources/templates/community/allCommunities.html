@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Community Overview</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/community/allCommunities.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<header>
+    <h1>All Communities</h1>
+</header>
+
+<div class="create-community-container">
+    <a th:href="@{/communities/createCommunity}" class="create-community-link">Create Community</a>
+</div>
+
+<main>
+    <section class="community-container">
+        <h2>List of Communities</h2>
+        <div class="community-list">
+            <ul>
+                <!-- loop through each community sent in the communityController class function showCommunityPage()-->
+                <li th:each="community : ${communities}" class="community-item">
+                    <a th:href="@{'/communities/' + ${community.id}}" class="community-link">
+                        <div class="community-details">
+                            <h3 th:text="${community.name}"></h3>
+                            <p th:text="'Members: ' + ${#lists.size(community.users)}"></p> <!-- Show the number of members -->
+
+                            <!-- Join form -->
+                            <form th:action="@{'/communities/join/' + ${community.id}}" method="post">
+                                <button type="submit" class="join-button">Join</button>
+                            </form>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+</body>
+</html>

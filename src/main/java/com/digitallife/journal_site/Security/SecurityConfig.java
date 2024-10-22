@@ -32,7 +32,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/register/user", "/home", "/css/**", "/images/**", "/js/**").permitAll(); //all pages that are accessible without logging in
+                    registry.requestMatchers("/register/**", "/home", "/css/**", "/images/**", "/js/**").permitAll(); //all pages that are accessible without logging in
                     registry.anyRequest().authenticated(); // all other pages are only accessible after logging in
                 })
 
