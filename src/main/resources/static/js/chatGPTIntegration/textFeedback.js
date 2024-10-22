@@ -26,8 +26,11 @@ async function getFeedbackFromServer(text) {
 // put that text in the journal entry box
 document.getElementById('get-feedback').addEventListener('click', async function() {
     const journalText = document.getElementById('journal-content').value;
+    const feedbackButton = document.getElementById('get-feedback');
+
     if (journalText) {
         document.getElementById('feedback-text').innerText = 'Generating feedback...';
+        feedbackButton.disable = true;
 
         try {
             const feedback = await getFeedbackFromServer(journalText);
@@ -35,6 +38,8 @@ document.getElementById('get-feedback').addEventListener('click', async function
         } catch (error) {
             document.getElementById('feedback-text').innerText = 'Error generating feedback. Please try again.';
             console.error('Error fetching feedback:', error);
+        } finally {
+            feedbackButton.disable = false;
         }
     } else {
         alert('Please write something in the journal first.');

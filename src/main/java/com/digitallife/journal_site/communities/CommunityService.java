@@ -43,6 +43,9 @@ public class CommunityService {
             Community community = communityOptional.get();
             User user = userOptional.get();
 
+            System.out.println(user);
+            System.out.println(community);
+
             // Add the user to the community
             community.getUsers().add(user);
             user.getCommunities().add(community);

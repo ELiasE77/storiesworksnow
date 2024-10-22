@@ -43,6 +43,15 @@ public class CommunityController {
         return "community/yourCommunities";
     }
 
+    @GetMapping("/communityOverview")
+    public String showCommunityOverview(Model model) {
+        List<Community> communities = communityRepository.findAll();
+
+        model.addAttribute("communities", communities);
+
+        return "community/allCommunities";
+    }
+
     //shows the page to create a new community
     @GetMapping("/createCommunity")
     public String showCommunityCreator() {
@@ -60,8 +69,6 @@ public class CommunityController {
         // Fetch the journal entries for this community, ordered by date (most recent first)
         List<JournalEntry> journalEntries = journalEntryRepository.findByCommunityOrderByTimestampDesc(community);
 
-        //testing
-        System.out.println(journalEntries);
 
         // Add community and journal entries to the model
         model.addAttribute("community", community);

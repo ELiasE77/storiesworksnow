@@ -1,25 +1,26 @@
 nav {
-    background-color: #333; /* Dark background */
+    background-color: #333333; /* Dark background */
     padding: 15px;          /* Spacing around the navbar */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
     position: fixed; /* Fixes the navbar to the top */
-    top: 0;          /* Aligns it to the top of the viewport */
+    top: 0;          /* Aligns it to the top of the view */
     left: 0;         /* Aligns it to the left */
-    width: 100%;     /* Makes the navbar span the full width */
+    width: 100%;  /* Makes the navbar span the full width */
+    height: 80px;
     z-index: 1000;   /* Ensures it is above other content */
 }
 
 nav ul {
     list-style-type: none; /* Remove default bullets */
-    margin: 0;            /* Remove default margin */
-    padding: 0;           /* Remove default padding */
-    display: flex;        /* Use flexbox for horizontal alignment */
+    margin: 0; /* Remove default margin */
+
 }
 
 nav ul li {
     flex: 1;
     float: left;
-    border-right: 1px solid #bbb;
+    box-shadow: #595757;
+    margin: 5px;
 }
 
 nav ul li a {
@@ -32,8 +33,7 @@ nav ul li a {
 }
 
 nav ul li a:hover {
-    background-color: #555; /* Darker background on hover */
-    color: #ffcc00; /* Change text color on hover */
+    background-color: #555;
 }
 
 .active {
