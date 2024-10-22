@@ -1,0 +1,113 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5; /* Light background */
+}
+
+.edit-container {
+    background-color: #fff; /* White background for the edit container */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 80%; /* Full width with some margin */
+    max-width: 800px; /* Limit maximum width */
+    display: flex;
+    flex-direction: column;
+    margin: 90px;
+    padding: 20px; /* Padding inside the container */
+}
+
+h1 {
+    margin-bottom: 20px; /* Spacing below the title */
+    text-align: center; /* Centered title */
+}
+
+.image-section {
+    flex: 1;
+    margin-right: 20px; /* Margin to separate image from the form */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-section {
+    flex: 2; /* Allow more space for form */
+}
+
+#titleText {
+    width: 100%;
+    height: 30px; /* Height of the text area */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px; /* Spacing below the textarea */
+}
+
+#journal-content {
+    width: 100%;
+    height: 150px; /* Height of the text area */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 20px; /* Spacing below the textarea */
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between; /* Space buttons evenly */
+    margin-top: 10px; /* Spacing above buttons */
+}
+
+
+
+button {
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px; /* Padding inside buttons */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.cancel-button {
+    display: inline-block;
+    text-align: center;
+    margin-top: 20px; /* Spacing above the cancel button */
+    padding: 10px 15px; /* Padding inside cancel button */
+    background-color: #dc3545; /* Danger color */
+    color: white;
+    border-radius: 5px;
+    text-decoration: none; /* Remove underline */
+}
+
+.cancel-button:hover {
+    background-color: #c82333; /* Darker red on hover */
+}
+
+#feedback {
+    margin-top: 20px; /* Spacing above feedback */
+    border: 1px solid #ccc; /* Light border */
+    padding: 10px; /* Padding inside feedback */
+    border-radius: 5px;
+    background-color: #f9f9f9; /* Light background */
+}
+
+#generated-image-container {
+    margin-top: 20px; /* Spacing above generated image */
+    justify-content: center;
+    align-items: center;
+}
+

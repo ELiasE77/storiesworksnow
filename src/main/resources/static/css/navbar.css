@@ -1,0 +1,52 @@
+nav {
+    background-color: #333; /* Dark background */
+    padding: 15px;          /* Spacing around the navbar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    position: fixed; /* Fixes the navbar to the top */
+    top: 0;          /* Aligns it to the top of the viewport */
+    left: 0;         /* Aligns it to the left */
+    width: 100%;     /* Makes the navbar span the full width */
+    z-index: 1000;   /* Ensures it is above other content */
+}
+
+nav ul {
+    list-style-type: none; /* Remove default bullets */
+    margin: 0;            /* Remove default margin */
+    padding: 0;           /* Remove default padding */
+    display: flex;        /* Use flexbox for horizontal alignment */
+}
+
+nav ul li {
+    flex: 1;
+    float: left;
+    border-right: 1px solid #bbb;
+}
+
+nav ul li a {
+    display: block;       /* Make the entire area clickable */
+    color: white;        /* White text color */
+    text-decoration: none; /* Remove underline */
+    text-align: center;   /* Center the text */
+    padding: 10px;        /* Padding inside the links */
+    transition: background-color 0.3s, color 0.3s; /* Smooth transition for hover effects */
+}
+
+nav ul li a:hover {
+    background-color: #555; /* Darker background on hover */
+    color: #ffcc00; /* Change text color on hover */
+}
+
+.active {
+    background-color: #04AA6D;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 600px) {
+    nav ul {
+        flex-direction: column; /* Stack items vertically on small screens */
+    }
+
+    nav ul li {
+        text-align: left; /* Align text to the left */
+    }
+}

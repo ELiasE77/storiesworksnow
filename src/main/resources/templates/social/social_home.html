@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Social Journal Page</title>
+    <link rel="stylesheet" th:href="@{/css/social/social_janneke.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+
+<header>
+    <h1>Social Journal Page</h1>
+</header>
+
+<main>
+    <section class="story-gallery">
+        <h2 id="h2">Recent Journal Entries</h2>
+        <div class="entry-list">
+            <ul>
+                <!-- Loop through each journal entry in the 'entries' attribute -->
+                <li th:each="entry : ${entries}" class="journal-entry">
+                    <div class="story-item">
+                        <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image" th:if="${entry.image}"/>
+
+                        <div id="story-content">
+                            <h3 th:text="${entry.title}" class="journal-title"></h3>
+                            <h4 th:text="${entry.user.username}" class="journal-username"></h4> <!-- Display the username -->
+                            <p th:text="${entry.content}" class="journal-text"></p> <!-- Display journal content -->
+                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}" class="journal-timestamp"></small>
+
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2024 Social Journal. All Rights Reserved.</p>
+</footer>
+</body>
+</html>

@@ -26,23 +26,6 @@ header h1 {
     float: left;
 }
 
-nav {
-    float: right;
-}
-
-nav ul {
-    list-style: none;
-}
-
-nav ul li {
-    display: inline;
-    margin-left: 20px;
-}
-
-nav ul li a {
-    color: #fff;
-    text-decoration: none;
-}
 
 .hero {
     background-image: url('/static/images/homepageimage.jpg');

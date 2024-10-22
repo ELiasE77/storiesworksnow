@@ -5,30 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Life</title>
     <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
 </head>
 <body>
 
-<header>
-    <div class="container">
-        <h1>Digital Life</h1>
-        <nav>
-            <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#services">Services</a></li>
-                <li><a href="http://localhost:8080/login">Login</a></li>
-                <li><a href="#http://localhost:8080/register">Register</a></li>
-            </ul>
-        </nav>
-    </div>
-</header>
+<div th:replace="~{navbar :: navbar}"></div>
 
-<section class="hero" id="home">
-    <div class="container">
-        <h2>Journal</h2>
-        <p>Your platform for sharing and creating journals</p>
-        <a href="https://localhost:8080/journaling" class="cta">Create Journal Entry</a>
-    </div>
-</section>
 
 <section class="services" id="services">
     <div class="container">

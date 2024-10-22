@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${community.name} + ' - Journal Entries'">Community Name</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/community/community.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+
+<section class="community-details-container">
+    <div class="community-header">
+        <h1 th:text="${community.name}">Community Name</h1>
+        <p th:text="${community.description}">Community description goes here.</p>
+    </div>
+</section>
+
+<section class="journal-entries-container">
+    <h2>Recent Journal Entries</h2>
+    <div class="journal-entries-list">
+        <ul>
+            <!-- Loop through the list of journal entries -->
+            <li th:each="entry : ${entries}" class="journal-entry">
+                <div class="story-item">
+                    <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image" th:if="${entry.image}"/>
+
+                    <div id="story-content">
+                        <h3 th:text="${entry.title}" class="journal-title"></h3>
+                        <h4 th:text="${entry.user.username}" class="journal-username"></h4> <!-- Display the username -->
+                        <p th:text="${entry.content}" class="journal-text"></p> <!-- Display journal content -->
+                        <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}" class="journal-timestamp"></small>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</section>
+</body>
+</html>

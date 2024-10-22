@@ -15,9 +15,4 @@ public class PageController {
     public String showLoginPage() {
         return "login";
     }
-
-    @GetMapping("/journaling")
-    public String showJournalingPage() {
-        return "journaling";
-    }
 }
