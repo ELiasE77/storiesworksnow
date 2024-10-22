@@ -1,0 +1,87 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5; /* Light background color */
+}
+
+header {
+    background-color: #298780; /* Header color */
+    color: white;
+    padding-top: 60px;
+    padding-bottom: 15px;
+    text-align: center;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+main {
+    padding: 20px;
+    max-width: 600px; /* Max width for the main content */
+    margin: auto; /* Center the main content */
+}
+
+.create-community-container {
+    background-color: white; /* White background for the form */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    padding: 20px;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold; /* Bold labels */
+    display: block; /* Labels on a new line */
+}
+
+input[type="text"],
+textarea {
+    width: 100%; /* Full width of the input */
+    border: 1px solid #ccc; /* Light border */
+    border-radius: 5px;
+    padding: 10px; /* Padding inside the input */
+    margin-bottom: 20px; /* Space below input fields */
+}
+
+textarea {
+    height: 100px; /* Height for the description textarea */
+    resize: vertical; /* Allow vertical resizing only */
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between; /* Space buttons evenly */
+}
+
+button {
+    background-color: #007bff; /* Button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px; /* Padding for the buttons */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth background transition */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker button color on hover */
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333; /* Footer color */
+    color: white;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}

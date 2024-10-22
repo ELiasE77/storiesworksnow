@@ -3,20 +3,26 @@ package com.digitallife.journal_site.ChatGptIntegration;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Base64;
+
 @RestController
 @RequestMapping("/api")
 public class ChatGPTController {
 
     private final String OPENAI_API_KEY = "sk--xnzh6pZqFbNzux4Y92cbLKpAyEqL1Gv2SD1_AqiOrT3BlbkFJv1izmE8Nv8isJrc-6Kb-dwaS_78uAtc91wBt3-Fm8A";
+    private final String NEW_OPENAI_API_KEY = "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";
+    private static final String FINE_TUNED_MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AlydAQCN";
+    private static final String FINE_TUNED_JOB_ID = "ftjob-nTaBshRlJIlGpbnaGonaV1Rr";
 
     // Method to get feedback from ChatGPT on the user's journal entry
     @PostMapping("/get-feedback")
@@ -35,14 +41,14 @@ public class ChatGPTController {
 
         // Building the request body
         JSONObject requestBody = new JSONObject();
-        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("model", FINE_TUNED_MODEL_ID);
         requestBody.put("messages", messages);
         requestBody.put("max_tokens", 150);
         requestBody.put("temperature", 0.5);  // adjust creativity, closer to 1 means answers will be more creative
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.set("Authorization", "Bearer " + NEW_OPENAI_API_KEY);
         headers.set("Content-Type", "application/json");
 
         // Create HTTP request
@@ -79,7 +85,24 @@ public class ChatGPTController {
         } else {
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         }
-        return ResponseEntity.ok("{\"imageUrl\":\"" + imageUrl + "\"}");
+
+        try {
+            // Fetch the image from the URL
+            URL urlObj = new URL(imageUrl);
+            InputStream inputStream = urlObj.openStream();
+            byte[] imageBytes = inputStream.readAllBytes(); // Read image into a byte array
+
+            // Convert byte array to Base64
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+
+            // Return the Base64 image as a JSON response
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body("{\"base64Image\":\"" + base64Image + "\"}");
+
+        } catch (Exception e) {
+            // Handle any errors that occur while fetching or processing the image
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to fetch and encode image: " + e.getMessage() + "\"}");
+        }
     }
 
 

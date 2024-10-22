@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal Entries</title>
+  <link rel="stylesheet" th:href="@{/css/journaling/journal_original.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+  <style>
+    #speechIndicator {
+      display: none; /* Hide the speech indicator by default */
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+
+<section>
+
+  <div class="journalEntry-container">
+    <h1>Create your Journal entry!</h1>
+
+    <form id="journal-form" action="/journal/save" method="POST">
+      <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
+      <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
+
+      <label for="visibility">Visibility:</label>
+      <select name="visibility" id="visibility" required onchange="toggleCommunitySelector()">
+        <option value="PRIVATE">Private</option>
+        <option value="PUBLIC">Public</option>
+        <option value="COMMUNITY">Community</option>
+      </select>
+
+      <div id="community-selector" style="display: none;">
+        <label for="community">Select Community:</label>
+        <select name="communityId" id="community">
+          <option value="" disabled selected>Select a community</option>
+          <option th:each="community : ${communities}"
+                  th:value="${community.id}"
+                  th:text="${community.name}"></option>
+        </select>
+      </div>
+
+      <input type="hidden" name="imageUrl" id="imageUrl" value="" style="display: none"> <!-- used to send the image data to database, will not show image -->
+
+      <div class="button-group">
+        <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
+        <button type="button" id="get-feedback">Get Feedback</button>
+        <button type="button" id="generate-image">Generate Image</button>
+        <button type="submit">Submit</button>
+      </div>
+      <div id="speechIndicator">🎤 Listening...</div> <!-- will show when speechToTextBtn is pressed -->
+
+
+      <div id="feedback"> <!-- Feedback will be shown here -->
+        <h3>AI Feedback</h3>
+        <p id="feedback-text"></p>
+      </div>
+
+      <div id="generated-image-container"> <!-- generated image will be shown here -->
+        <img id="generated-image" src="" alt="Generated Image" style="display: none; max-width: 100%;" />
+      </div>
+    </form>
+  </div>
+
+</section>
+
+
+<script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
+<script th:src="@{/js/chatGPTIntegration/textFeedback.js}"></script>
+<script th:src="@{/js/component/speechToText.js}"></script>
+<script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
+
+
+</body>
+</html>
