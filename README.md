@@ -3,7 +3,7 @@ Created in service of Digital Life to serve as a platform to share personal
 stories, create image galleries based on those stories, improve your journal
 writing skills and connect with others through those experiences.
 
-##The Team
+## The Team
 - Xander Heinen (Developer)
 - Elias (AI model trainer)
 - Janneke (website design)
@@ -11,15 +11,15 @@ writing skills and connect with others through those experiences.
 - George (business model)
 
 
-##Implementation
-###Current code stack
+## Implementation
+### Current code stack
 - Java (back-end)
 - html/css (front-end layout)
 - javascript (page interactivity)
 - MySql (database)
 
-##current functionality
-###Pages
+## current functionality
+### Pages
 - A page to create journal entries (journal.html)
 - A page to edit created journal entries (journal_editing.html)
 - A page to create a community (communityCreator.html)
@@ -27,12 +27,12 @@ writing skills and connect with others through those experiences.
 - A page with an overview of all journal entries (social_home.html)
 - A home page (home.html)
 
-###Features currently working
+### Features currently working
 - generate image based on journal entry
 - generate feedback on the writing of a journal entry
 - 
 
-###Security
+### Security
 The following work regarding security has already been implemented:
 - password hashing using Bcrypt (see securityConfig class)
 - basic session management (could improve on coockie handling)
@@ -40,8 +40,8 @@ The following work regarding security has already been implemented:
 feedback or image button)
 - Protection against SQL injection (only prepared statements are used using Spring Boot)
 
-##Future work
-###Security
+## Future work
+### Security
 There are several security concerns in the current codebase which 
 are not yet addressed, I listed all I found below, be warned that 
 other issues could be present which are not listed below:
@@ -55,5 +55,5 @@ and malicious scripts.
 Make sure that only the current user can access it.
 - HTTPS instead of HTTP
 
-###Possible additions
+### Possible additions
 - to be discussed
