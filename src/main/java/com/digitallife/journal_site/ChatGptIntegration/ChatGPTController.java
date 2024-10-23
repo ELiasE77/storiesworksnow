@@ -21,8 +21,7 @@ public class ChatGPTController {
 
     private final String OPENAI_API_KEY = "sk--xnzh6pZqFbNzux4Y92cbLKpAyEqL1Gv2SD1_AqiOrT3BlbkFJv1izmE8Nv8isJrc-6Kb-dwaS_78uAtc91wBt3-Fm8A";
     private final String NEW_OPENAI_API_KEY = "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";
-    private static final String FINE_TUNED_MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AlydAQCN";
-    private static final String FINE_TUNED_JOB_ID = "ftjob-nTaBshRlJIlGpbnaGonaV1Rr";
+    private static final String FINE_TUNED_MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
 
     // Method to get feedback from ChatGPT on the user's journal entry
     @PostMapping("/get-feedback")
@@ -51,6 +50,7 @@ public class ChatGPTController {
         headers.set("Authorization", "Bearer " + NEW_OPENAI_API_KEY);
         headers.set("Content-Type", "application/json");
 
+
         // Create HTTP request
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
 
@@ -71,7 +71,7 @@ public class ChatGPTController {
 
         // Set headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.set("Authorization", "Bearer " + NEW_OPENAI_API_KEY);
         headers.set("Content-Type", "application/json");
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
