@@ -5,13 +5,17 @@ import com.digitallife.journal_site.communities.CommunityRepository;
 import com.digitallife.journal_site.exceptions.ResourceNotFoundException;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
+import com.digitallife.journal_site.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Controller
@@ -26,6 +30,12 @@ public class JournalController {
 
     @Autowired
     private CommunityRepository communityRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JournalEntryRepository journalEntryRepository;
 
     // Endpoint to handle saving a journal entry
     @PostMapping("/save")
@@ -114,6 +124,40 @@ public class JournalController {
 
         model.addAttribute("entries", entries);
         return "social/social_home"; // Corresponds to the Thymeleaf template
+    }
+
+    // Method to display the user's image timeline
+    @GetMapping("/timeline")
+    public String showImageTimeline(
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "year", required = false) Integer year,
+            Model model, Principal principal) {
+
+        // Find the logged-in user
+        Optional<User> userOptional = userRepository.findByUsername(principal.getName());
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("No user found with that name");
+        }
+        User user = userOptional.get();
+
+        // Fetch distinct months and years for journal entries with images
+        List<Object[]> availableMonthsAndYears = journalEntryRepository.findDistinctMonthsAndYearsWithImages(user);
+        model.addAttribute("availableMonthsAndYears", availableMonthsAndYears);
+
+        // If no month or year is provided, default to the current month
+        LocalDateTime now = LocalDateTime.now();
+        if (month == null) month = now.getMonthValue();
+        if (year == null) year = now.getYear();
+
+        // Fetch the journal entries for the user for the selected month and year
+        List<JournalEntry> journalEntriesWithImages = journalEntryRepository.findByUserAndMonthAndYearWithImages(user, month, year);
+        model.addAttribute("entries", journalEntriesWithImages);
+
+        // Add the selected month and year to the model
+        model.addAttribute("selectedMonth", month);
+        model.addAttribute("selectedYear", year);
+
+        return "journaling/timeline";  // Return the Thymeleaf template for the timeline
     }
 
 }
