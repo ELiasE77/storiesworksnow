@@ -46,6 +46,8 @@
 
       <input type="hidden" name="imageUrl" id="imageUrl" value="" style="display: none"> <!-- used to send the image data to database, will not show image -->
 
+
+
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
         <button type="button" id="get-feedback">Get Feedback</button>
@@ -53,6 +55,17 @@
         <button type="submit">Submit</button>
       </div>
       <div id="speechIndicator">🎤 Listening...</div> <!-- will show when speechToTextBtn is pressed -->
+
+      <!-- Image Style Selection -->
+      <h2>Select Image Style</h2>
+      <div class="style-selection">
+        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist Style" id="minimalist-style">
+        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor poster Style" id="labor_poster-style">
+        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch Style" id="sketch-style">
+        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor Style" id="watercolor-style">
+      </div>
+
+      <input type="hidden" id="selected-style" name="selected-style" value="minimalist"> <!-- Default style is minimalist -->
 
 
       <div id="feedback"> <!-- Feedback will be shown here -->

@@ -1,0 +1,163 @@
+/* Global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    padding: 110px 20px 20px;
+}
+
+a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Profile container */
+.profile-container {
+    background-color: #fff;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Profile header */
+.profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Align items to the start */
+    margin-bottom: 20px;
+}
+
+/* Profile picture */
+.profile-picture img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 20px;
+    border: 2px solid #007bff;
+}
+
+/* Profile information */
+.profile-info {
+    flex-grow: 1;
+}
+.profile-info h2 {
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: #333;
+}
+
+.profile-info p {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Follower info */
+.follower-info {
+    display: flex;
+    gap: 20px;
+}
+
+.follower-info p {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* Profile Actions (Follow/Unfollow Button) */
+.profile-actions {
+    margin-left: 20px;
+    flex-shrink: 0; /* Prevent the button from shrinking */
+
+}
+
+#follow-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#follow-btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-follow {
+    background-color: #28a745;
+}
+
+.btn-follow:hover {
+    background-color: #218838;
+}
+
+/* Communities section */
+.communities-section h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.communities-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.communities-section ul li {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.communities-section ul li:last-child {
+    border-bottom: none;
+}
+
+.communities-section ul li a {
+    font-size: 16px;
+}
+
+/* Journal section */
+.journal-section h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.journal-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.journal-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.journal-item h4 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.journal-item p {
+    font-size: 14px;
+    color: #555;
+}
+
+.journal-item small {
+    color: #888;
+}
+
+.journal-item:last-child {
+    border-bottom: none;
+}

@@ -38,6 +38,11 @@
     <!-- Timeline display for journal entries -->
     <div class="timeline">
         <ul>
+            <!-- Check if the entries list is empty -->
+            <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
+                <p>You have not written any entries with pictures yet!</p>
+            </li>
+
             <!-- Loop through each journal entry with an image -->
             <li th:each="entry : ${entries}">
                 <div class="timeline-item">
