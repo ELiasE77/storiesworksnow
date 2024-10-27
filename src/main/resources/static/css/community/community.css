@@ -39,12 +39,12 @@ header {
 }
 
 /* Remove bullet points from the unordered list and list items */
-.entry-list ul {
+.journal-entries-list ul {
     list-style-type: none; /* Remove bullets */
     padding: 0; /* Remove default padding */
 }
 
-.entry-list li {
+.journal-entries-list li {
     margin-bottom: 20px; /* Add some spacing between entries */
 }
 
@@ -59,11 +59,11 @@ main {
     margin: 20px auto;
 }
 
-.story-gallery {
+.journal-entries-container {
     margin-bottom: 40px;
 }
 
-.story-gallery h2 {
+.journal-entries-container h2 {
     text-align: center;
     font-size: 2rem;
     margin-bottom: 20px;

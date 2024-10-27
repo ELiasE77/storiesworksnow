@@ -1,10 +1,31 @@
-async function generateImageFromJournalEntry(text) {
+// Select all style option images
+const styleOptions = document.querySelectorAll('.style-option');
+
+
+// Handle style selection
+styleOptions.forEach(option => {
+    option.addEventListener('click', function() {
+        // Remove 'selected' class from all options
+        styleOptions.forEach(opt => opt.classList.remove('selected'));
+
+        // Add 'selected' class to the clicked option
+        this.classList.add('selected');
+
+        // Set the selected style value in the hidden input
+        document.getElementById('selected-style').value = this.getAttribute('data-style');
+    });
+});
+
+async function generateImageFromJournalEntry(text, style) {
     const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: {
-            'Content-Type': 'text/plain'
+            'Content-Type': 'application/json'
         },
-        body: text
+        body: JSON.stringify({
+            journalText: text,
+            style: style
+        })
     });
 
     if (response.ok) {
@@ -19,6 +40,7 @@ async function generateImageFromJournalEntry(text) {
 // Button click handler for generate image button
 document.getElementById('generate-image').addEventListener('click', async function() {
     const journalText = document.getElementById('journal-content').value;
+    const selectedStyle = document.getElementById('selected-style').value;
     const generateButton = document.getElementById('generate-image');
     const loadingIndicator = document.getElementById('loading-indicator');
 
@@ -29,7 +51,7 @@ document.getElementById('generate-image').addEventListener('click', async functi
         generateButton.disabled = true;
 
         try {
-            const base64Image = await generateImageFromJournalEntry(journalText);
+            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle);
 
             const imageElement = document.getElementById('generated-image');
             imageElement.src = `data:image/png;base64,${base64Image}`;

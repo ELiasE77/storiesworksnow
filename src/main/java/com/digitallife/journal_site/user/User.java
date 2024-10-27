@@ -5,6 +5,7 @@ import com.digitallife.journal_site.communities.Community;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,8 +22,21 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<JournalEntry> journalEntries;
 
+    // Followed users (who this user follows) Join table tracks who the user follows
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+            name = "user_follows",
+            joinColumns = @JoinColumn(name = "follower_id"),
+            inverseJoinColumns = @JoinColumn(name = "followed_id")
+    )
+    private Set<User> following = new HashSet<>();
+
+    // Followers (who follows this user)
+    @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
+    private Set<User> followers = new HashSet<>();
 
 
+    // a join table to track which communities the user is a part of
     @ManyToMany
     @JoinTable(
             name = "user_community",
@@ -31,7 +45,7 @@ public class User {
     )
     private Set<Community> communities = new HashSet<>();
 
-    // Getters and setters
+    // ************************************ Getters and setters ********************************************************
 
     public Set<Community> getCommunities() {
             return communities;
@@ -79,6 +93,22 @@ public class User {
 
     public void setJournalEntries(Set<JournalEntry> journalEntries) {
         this.journalEntries = journalEntries;
+    }
+
+    public Set<User> getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(Set<User> following) {
+        this.following = following;
+    }
+
+    public Set<User> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(Set<User> followers) {
+        this.followers = followers;
     }
 }
 

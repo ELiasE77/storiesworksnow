@@ -19,7 +19,7 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     width: 100%; /* Full width of the container */
-    max-width: 900px; /* Limit the width for readability */
+    max-width: 660px; /* Limit the width for readability */
     padding: 30px; /* Padding inside the container */
     margin: auto; /* Space below the container */
 }
@@ -115,4 +115,32 @@ button:hover {
     margin-top: 20px; /* Spacing above generated image */
     justify-content: center;
     align-items: center;
+}
+
+/* Style Selection Container */
+.style-selection {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.style-option {
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.style-option:hover {
+    border-color: #007bff;
+}
+
+.style-option.selected {
+    border-color: #007bff;
+}
+
+h2 {
+    margin-top: 15px;
+    align-content: center;
 }

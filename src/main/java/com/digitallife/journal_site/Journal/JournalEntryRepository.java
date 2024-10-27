@@ -25,6 +25,10 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     // Find unique months and years for journal entries for a user
     @Query("SELECT DISTINCT FUNCTION('MONTH', e.timestamp), FUNCTION('YEAR', e.timestamp) FROM JournalEntry e WHERE e.user = :user AND e.image IS NOT NULL ORDER BY FUNCTION('YEAR', e.timestamp) DESC, FUNCTION('MONTH', e.timestamp) DESC")
     List<Object[]> findDistinctMonthsAndYearsWithImages(@Param("user") User user);
+
+    // Query to find only public journal entries and order them by timestamp (descending)
+    List<JournalEntry> findByVisibilityOrderByTimestampDesc(JournalEntry.Visibility visibility);
+
 }
 
 

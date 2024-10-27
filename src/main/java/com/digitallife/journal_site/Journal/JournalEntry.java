@@ -24,22 +24,22 @@ public class JournalEntry {
     @Column(nullable = false)
     private LocalDateTime timestamp;
 
-    @Column(name = "image", columnDefinition = "MEDIUMTEXT")
+    @Column(name = "image", columnDefinition = "MEDIUMTEXT") //definition MEDIUMTEXT is needed since base64 Strings are very large so MySql database has them listed as MEDIUMTEXT
     private String image;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user; //specifies which user wrote the entry (FK)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Visibility visibility;
+    private Visibility visibility; //enumeration can be seen below
 
     @ManyToOne
     @JoinColumn(name = "community_id")
-    private Community community;
+    private Community community; //specifies in which community it was posted (FK)
 
-    // Enum for visibility
+    // Enum for visibility used to specify who can see your entries
     public enum Visibility {
         PRIVATE,
         PUBLIC,
