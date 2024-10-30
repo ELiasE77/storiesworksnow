@@ -56,3 +56,4 @@ Make sure that only the current user can access it.
 - HTTPS instead of HTTP
 
 ### Possible additions
+- to be discussed
