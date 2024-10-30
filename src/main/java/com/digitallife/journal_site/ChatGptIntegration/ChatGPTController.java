@@ -14,17 +14,22 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Base64;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class ChatGPTController {
 
-    private final String OPENAI_API_KEY = "sk--xnzh6pZqFbNzux4Y92cbLKpAyEqL1Gv2SD1_AqiOrT3BlbkFJv1izmE8Nv8isJrc-6Kb-dwaS_78uAtc91wBt3-Fm8A";
     private final String NEW_OPENAI_API_KEY = "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";
-    private static final String FINE_TUNED_MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AlydAQCN";
-    private static final String FINE_TUNED_JOB_ID = "ftjob-nTaBshRlJIlGpbnaGonaV1Rr";
+    private static final String FINE_TUNED_MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
 
-    // Method to get feedback from ChatGPT on the user's journal entry
+    /**
+     * gets feedback about the journal entry text from a fine-tuned model of chat gpt 4o mini. This model was trained on our own data.
+     *
+     * @param journalEntry The journal Entry that needs to be assessed.
+     * @return A string which contains the response of the fine-tuned model
+     * @throws JSONException when JSON rules are not adhered when creating a JSONArray
+     */
     @PostMapping("/get-feedback")
     public ResponseEntity<String> getFeedback(@RequestBody String journalEntry) throws JSONException {
         String url = "https://api.openai.com/v1/chat/completions";
@@ -51,6 +56,7 @@ public class ChatGPTController {
         headers.set("Authorization", "Bearer " + NEW_OPENAI_API_KEY);
         headers.set("Content-Type", "application/json");
 
+
         // Create HTTP request
         HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
 
@@ -58,20 +64,35 @@ public class ChatGPTController {
         return restTemplate.postForEntity(url, request, String.class);
     }
 
+    /**
+     * generate an image using dalle 3 api. The image is based on the journal entry and the chosen style.
+     * TODO instead of storing the image as a base64 store it on a cloud like google cloud (saves data of database)
+     *
+     * @param request is a JSON file with the journalText and the type of style chosen by the user
+     * @return the image in base64 form to store in a database
+     * @throws JSONException when JSON rules are not adhered
+     */
     @PostMapping("/generate-image")
-    public ResponseEntity<String> generateImage(@RequestBody String journalEntry) throws JSONException {
+    public ResponseEntity<String> generateImage(@RequestBody Map<String, String> request) throws JSONException {
+        String journalText = request.get("journalText");
+        String style = request.get("style");
+
+        //create a prompt to dall e 3 api
+        String prompt = "Create a " + style + " image of one of the positive moments of the following journal:\n\n" + journalText;
+
+
         String url = "https://api.openai.com/v1/images/generations";
         RestTemplate restTemplate = new RestTemplate();
 
         // Prepare the request body for DALL·E
         JSONObject body = new JSONObject();
-        body.put("prompt", "Create an image of one of the positive moments of the following journal:\n\n" + journalEntry);
+        body.put("prompt", prompt);
         body.put("n", 1); // Generate 1 image
         body.put("size", "512x512"); // Image size
 
         // Set headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.set("Authorization", "Bearer " + NEW_OPENAI_API_KEY);
         headers.set("Content-Type", "application/json");
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);

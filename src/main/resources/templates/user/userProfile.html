@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${user.username} + ' | Profile'">Profile</title>
+  <link rel="stylesheet" th:href="@{/css/user/userProfile.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<div class="profile-container">
+  <!-- User Profile Header -->
+  <div class="profile-header">
+    <div class="profile-picture">
+      <img th:src="@{/images/default-profile.jpg}" alt="Profile Picture"> <!-- Placeholder for profile image -->
+    </div>
+    <div class="profile-info">
+      <h2 th:text="${user.username}">Username</h2>
+      <p>Role: <span th:text="${user.role}">User Role</span></p>
+      <div class="follower-info">
+        <p><strong th:text="${user.followers.size()}">0</strong> Followers</p>
+        <p><strong th:text="${user.following.size()}">0</strong> Following</p>
+      </div>
+    </div>
+
+    <div class="profile-actions" th:if="${user.username != currentUsername}">
+      <button id="follow-btn" th:data-username="${user.username}" th:text="${isFollowing ? 'Unfollow' : 'Follow'}"></button>
+    </div>
+  </div>
+
+  <!-- User Communities Section -->
+  <div class="communities-section">
+    <h3>Communities</h3>
+    <ul>
+      <li th:each="community : ${user.communities}">
+        <a th:href="@{'/communities/' + ${community.id}}" th:text="${community.name}">Community Name</a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- User Journal Entries Section -->
+  <div class="journal-section">
+    <h3>Journal Entries</h3>
+    <ul>
+      <li th:each="entry : ${user.journalEntries}">
+        <div class="journal-item">
+          <h4 th:text="${entry.title}">Journal Title</h4>
+          <p th:text="${entry.content}">Journal content...</p>
+          <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}">Posted on: Date</small>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<script th:src="@{/js/component/following.js}"></script>
+
+</body>
+</html>

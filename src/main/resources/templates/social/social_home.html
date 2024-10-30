@@ -28,7 +28,12 @@
 
                         <div id="story-content">
                             <h3 th:text="${entry.title}" class="journal-title"></h3>
-                            <h4 th:text="${entry.user.username}" class="journal-username"></h4> <!-- Display the username -->
+
+                            <!-- clickable link which leadst to the userProfile page-->
+                            <h4>
+                                <a th:href="@{'/user/' + ${entry.user.username}}" th:text="${entry.user.username}" class="journal-username"></a>
+                            </h4>
+
                             <p th:text="${entry.content}" class="journal-text"></p> <!-- Display journal content -->
                             <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}" class="journal-timestamp"></small>
 
