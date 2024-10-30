@@ -21,10 +21,17 @@
     <h2 id="h2">Recent Journal Entries</h2>
     <div class="entry-list">
       <ul>
+        <!-- Check if the entries list is empty -->
+        <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
+          <p>You have not written any entries yet!</p>
+        </li>
+
         <!-- Loop through each journal entry in the 'entries' attribute -->
         <li th:each="entry : ${entries}" class="journal-entry">
           <div class="story-item">
-            <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image" th:if="${entry.image}"/>
+            <div th:if="${entry.image}">
+              <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image"/>
+            </div>
 
             <div id="story-content">
               <h3 th:text="${entry.title}" class="journal-title"></h3>
@@ -40,8 +47,5 @@
   </section>
 </main>
 
-<footer>
-  <p>&copy; 2024 Social Journal. All Rights Reserved.</p>
-</footer>
 </body>
 </html>

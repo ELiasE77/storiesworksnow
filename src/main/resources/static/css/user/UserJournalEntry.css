@@ -100,3 +100,20 @@ main {
     font-size: 0.9rem;
     color: #888;
 }
+
+.story-item a {
+    text-decoration: none; /* Remove underline */
+    color: white; /* White text color */
+    background-color: #007bff; /* Blue background color */
+    padding: 10px 15px; /* Padding inside the button */
+    border-radius: 5px; /* Rounded corners */
+    font-weight: bold; /* Bold text */
+    position: absolute; /* Absolute positioning */
+    right: 15px; /* Align to the right edge of the container */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+/* Hover effect for the edit button */
+.story-item a:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}

@@ -18,6 +18,12 @@ public class RegistrationController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * post point which registers new users to the database
+     *
+     * @param user the new user to be added
+     * @return the user which needs to be saved
+     */
     @PostMapping("/register/user")
     public User createUser(@RequestBody User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
