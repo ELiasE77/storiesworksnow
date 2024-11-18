@@ -86,9 +86,11 @@ public class ChatGPTController {
 
         // Prepare the request body for DALL·E
         JSONObject body = new JSONObject();
+        body.put("model", "dall-e-3"); // Specify DALL·E 3 model
         body.put("prompt", prompt);
         body.put("n", 1); // Generate 1 image
-        body.put("size", "512x512"); // Image size
+        body.put("size", "1024x1024"); // Image size
+        body.put("quality", "standard");
 
         // Set headers
         HttpHeaders headers = new HttpHeaders();
