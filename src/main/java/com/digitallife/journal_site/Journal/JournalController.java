@@ -1,12 +1,9 @@
 package com.digitallife.journal_site.Journal;
 
 import com.digitallife.journal_site.communities.Community;
-import com.digitallife.journal_site.communities.CommunityRepository;
 import com.digitallife.journal_site.communities.CommunityService;
-import com.digitallife.journal_site.exceptions.ResourceNotFoundException;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
-import com.digitallife.journal_site.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -16,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 

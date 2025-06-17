@@ -17,13 +17,11 @@
 
 <div th:replace="~{navbar :: navbar}"></div>
 
-
 <section>
-
   <div class="journalEntry-container">
     <h1>Create your Journal entry!</h1>
 
-    <form id="journal-form" action="/journal/save" method="POST">
+    <form id="journal-form" th:action="@{/journal/save}" method="post">
       <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
       <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
 
@@ -44,9 +42,7 @@
         </select>
       </div>
 
-      <input type="hidden" name="imageUrl" id="imageUrl" value="" style="display: none"> <!-- used to send the image data to database, will not show image -->
-
-
+      <input type="hidden" name="imageUrl" id="imageUrl" value="" />
 
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
@@ -54,43 +50,38 @@
         <button type="button" id="generate-image">Generate Image</button>
         <button type="submit">Submit</button>
       </div>
-      <div id="speechIndicator">🎤 Listening...</div> <!-- will show when speechToTextBtn is pressed -->
+      <div id="speechIndicator">🎤 Listening...</div>
 
-      <!-- Image Style Selection -->
       <h2>Select Image Style</h2>
       <div class="style-selection">
-        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist Style" id="minimalist-style">
-        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor poster Style" id="labor_poster-style">
-        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch Style" id="sketch-style">
-        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor Style" id="watercolor-style">
+        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist Style">
+        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor poster Style">
+        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch Style">
+        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor Style">
       </div>
 
-      <input type="hidden" id="selected-style" name="selected-style" value="minimalist"> <!-- Default style is minimalist -->
+      <input type="hidden" id="selected-style" name="selected-style" value="minimalist">
 
-
-      <div id="feedback"> <!-- Feedback will be shown here -->
+      <div id="feedback">
         <h3>AI Feedback</h3>
         <p id="feedback-text"></p>
       </div>
 
-      <div id="generated-image-container"> <!-- generated image will be shown here -->
+      <div id="generated-image-container">
         <img id="generated-image" src="" alt="Generated Image" style="display: none; max-width: 100%;" />
       </div>
 
-      <div id="loading-indicator" style="display: none;"> <!-- shows when the user is generating an image -->
+      <div id="loading-indicator" style="display: none;">
         <p>Generating image, please wait...</p>
       </div>
     </form>
   </div>
-
 </section>
-
 
 <script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
 <script th:src="@{/js/chatGPTIntegration/textFeedback.js}"></script>
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
-
 
 </body>
 </html>
