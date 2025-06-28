@@ -15,7 +15,7 @@
   <!-- User Profile Header -->
   <div class="profile-header">
     <div class="profile-picture">
-      <img th:src="@{/images/default-profile.jpg}" alt="Profile Picture"> <!-- Placeholder for profile image -->
+      <img th:src="@{/images/default-profile.jpg}" alt="Profile Picture">
     </div>
     <div class="profile-info">
       <h2 th:text="${user.username}">Username</h2>
@@ -25,9 +25,11 @@
         <p><strong th:text="${user.following.size()}">0</strong> Following</p>
       </div>
     </div>
-
     <div class="profile-actions" th:if="${user.username != currentUsername}">
-      <button id="follow-btn" th:data-username="${user.username}" th:text="${isFollowing ? 'Unfollow' : 'Follow'}"></button>
+      <button id="follow-btn"
+              th:data-username="${user.username}"
+              th:text="${isFollowing ? 'Unfollow' : 'Follow'}">
+      </button>
     </div>
   </div>
 
@@ -36,7 +38,10 @@
     <h3>Communities</h3>
     <ul>
       <li th:each="community : ${user.communities}">
-        <a th:href="@{'/communities/' + ${community.id}}" th:text="${community.name}">Community Name</a>
+        <a th:href="@{'/communities/' + ${community.id}}"
+           th:text="${community.name}">
+          Community Name
+        </a>
       </li>
     </ul>
   </div>
@@ -45,11 +50,20 @@
   <div class="journal-section">
     <h3>Journal Entries</h3>
     <ul>
-      <li th:each="entry : ${user.journalEntries}">
-        <div class="journal-item">
+      <li th:each="entry : ${user.journalEntries}" class="journal-item">
+        <!-- Show image if present -->
+        <div th:if="${entry.imageUrl}" class="journal-image-wrapper">
+          <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
+               alt="Entry image"
+               class="journal-entry-image"/>
+        </div>
+
+        <div class="journal-content">
           <h4 th:text="${entry.title}">Journal Title</h4>
           <p th:text="${entry.content}">Journal content...</p>
-          <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}">Posted on: Date</small>
+          <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}">
+            Posted on: Date
+          </small>
         </div>
       </li>
     </ul>

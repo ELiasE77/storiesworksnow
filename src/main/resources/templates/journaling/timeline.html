@@ -38,7 +38,7 @@
     <!-- Timeline display for journal entries -->
     <div class="timeline">
         <ul>
-            <!-- Check if the entries list is empty -->
+            <!-- No-entries message -->
             <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
                 <p>You have not written any entries with pictures yet!</p>
             </li>
@@ -51,7 +51,9 @@
                     </div>
                     <div class="timeline-content">
                         <h3 th:text="${entry.title}">Journal Entry Title</h3>
-                        <img th:src="'data:image/png;base64,' + ${entry.image}" alt="Journal Entry Image" />
+                        <img th:if="${entry.imageUrl}"
+                             th:src="'data:image/png;base64,' + ${entry.imageUrl}"
+                             alt="Journal Entry Image" />
                     </div>
                 </div>
             </li>
