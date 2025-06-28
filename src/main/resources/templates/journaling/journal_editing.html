@@ -4,93 +4,126 @@
   <title>Edit Journal Entry</title>
   <link rel="stylesheet" th:href="@{/css/journaling/journal_editingPage.css}">
   <link rel="stylesheet" th:href="@{/css/navbar.css}">
-
 </head>
 <body>
 
 <div th:replace="~{navbar :: navbar}"></div>
 
-
 <div class="edit-container">
   <h1>Edit Journal Entry</h1>
+
   <div class="image-section">
     <img id="current-image"
-         th:if="${entry.image}"
-         th:src="'data:image/png;base64,' + ${entry.image}"
+         th:if="${entry.imageUrl}"
+         th:src="'data:image/png;base64,' + ${entry.imageUrl}"
          alt="Current Journal Entry Image"
          style="max-width: 100%;" />
   </div>
 
-
   <div class="form-section">
-    <form action="/journal/update" method="POST">
-      <input type="hidden" name="id" th:value="${entry.id}"/> <!-- Hidden input for ID -->
-      <textarea name="title" id="titleText" th:text="${entry.title}"></textarea>
-      <textarea name="content" id="journal-content" th:text="${entry.content}"></textarea>
-      <input type="hidden" name="imageUrl" id="imageUrl" th:value="${entry.image}">
+    <form th:action="@{/journal/update}" method="post">
+      <input type="hidden" name="id" th:value="${entry.id}" />
+
+      <textarea name="title"
+                id="titleText"
+                th:text="${entry.title}"></textarea>
+
+      <textarea name="content"
+                id="journal-content"
+                th:text="${entry.content}"></textarea>
+
+      <input type="hidden"
+             name="imageUrl"
+             id="imageUrl"
+             th:value="${entry.imageUrl}" />
 
       <label for="visibility">Visibility:</label>
-      <select name="visibility" id="visibility" required onchange="toggleCommunitySelector()">
-        <option value="PRIVATE">Private</option>
-        <option value="PUBLIC">Public</option>
-        <option value="COMMUNITY">Community</option>
+      <select name="visibility"
+              id="visibility"
+              required
+              onchange="toggleCommunitySelector()">
+        <option value="PRIVATE"
+                th:selected="${entry.visibility.name() == 'PRIVATE'}">Private</option>
+        <option value="PUBLIC"
+                th:selected="${entry.visibility.name() == 'PUBLIC'}">Public</option>
+        <option value="COMMUNITY"
+                th:selected="${entry.visibility.name() == 'COMMUNITY'}">Community</option>
       </select>
 
-      <div id="community-selector" style="display: none;">
+      <div id="community-selector"
+           th:if="${entry.visibility.name() == 'COMMUNITY'}"
+           style="display: block;">
         <label for="community">Select Community:</label>
-        <select name="communityId" id="community">
-          <option value="" disabled selected>Select a community</option>
+        <select name="community" id="community">
+          <option value="" disabled>Select a community</option>
           <option th:each="community : ${communities}"
                   th:value="${community.id}"
-                  th:text="${community.name}"></option>
+                  th:text="${community.name}"
+                  th:selected="${entry.community != null and entry.community.id == community.id}">
+          </option>
         </select>
       </div>
-
 
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
         <button type="button" id="get-feedback">Get Feedback</button>
-        <button type="button" id="generate-image">Retry Image generation</button>
+        <button type="button" id="generate-image">Retry Image Generation</button>
         <button type="submit">Update</button>
       </div>
 
-      <div id="speechIndicator">🎤 Listening...</div> <!-- will show when speechToTextBtn is pressed -->
+      <div id="speechIndicator">🎤 Listening...</div>
 
-      <!-- Image Style Selection -->
       <h2>Select Image Style</h2>
       <div class="style-selection">
-        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist Style" id="minimalist-style">
-        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor poster Style" id="labor_poster-style">
-        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch Style" id="sketch-style">
-        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor Style" id="watercolor-style">
+        <img th:src="@{/images/minimalist_style.png}"
+             class="style-option"
+             data-style="minimalist"
+             alt="Minimalist Style">
+        <img th:src="@{/images/labor_poster_style.png}"
+             class="style-option"
+             data-style="labor poster"
+             alt="Labor Poster Style">
+        <img th:src="@{/images/sketch_style.png}"
+             class="style-option"
+             data-style="sketch"
+             alt="Sketch Style">
+        <img th:src="@{/images/watercolor_style.png}"
+             class="style-option"
+             data-style="watercolor"
+             alt="Watercolor Style">
       </div>
+      <input type="hidden"
+             name="selected-style"
+             id="selected-style"
+             value="minimalist">
 
-      <input type="hidden" id="selected-style" name="selected-style" value="minimalist"> <!-- Default style is minimalist -->
-
-
-      <div id="feedback"> <!-- Generated feedback will be shown here -->
+      <div id="feedback">
         <h3>AI Feedback</h3>
         <p id="feedback-text"></p>
       </div>
 
-      <div id="generated-image-container"> <!-- Generated image will be shown here -->
-        <img id="generated-image" src="" alt="Generated Image" style="display: none; max-width: 100%;" />
+      <div id="generated-image-container">
+        <img id="generated-image"
+             src=""
+             alt="Generated Image"
+             style="display: none; max-width: 100%;" />
       </div>
 
-      <div id="loading-indicator" style="display: none;"> <!-- shows when the user is generating an image -->
+      <div id="loading-indicator" style="display: none;">
         <p>Generating image, please wait...</p>
       </div>
     </form>
 
     <div class="button-group">
-      <a href="/journal/home" class="cancel-button">Cancel</a> <!-- Link to go back to journal page -->
-      <!-- New Delete Button -->
+      <a th:href="@{/journal/home}" class="cancel-button">Cancel</a>
       <button type="button" class="delete-button" id="deleteButton">Delete</button>
     </div>
 
-    <!-- Hidden Delete Form -->
-    <form id="deleteForm" action="/journal/delete" method="POST" style="display: none;">
-      <input type="hidden" name="id" th:value="${entry.id}"/> <!-- Hidden input for ID -->
+    <form id="deleteForm"
+          th:action="@{/journal/delete}"
+          method="post"
+          style="display: none;">
+      <input type="hidden" name="id" th:value="${entry.id}" />
     </form>
   </div>
 </div>
@@ -100,7 +133,6 @@
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
 <script th:src="@{/js/pageSpecific/deleteJournalEntry.js}"></script>
-
 
 </body>
 </html>

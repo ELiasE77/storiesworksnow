@@ -5,12 +5,10 @@
   <title>Personal Journal Page</title>
   <link rel="stylesheet" th:href="@{/css/user/UserJournalEntry.css}">
   <link rel="stylesheet" th:href="@{/css/navbar.css}">
-
 </head>
 <body>
 
 <div th:replace="~{navbar :: navbar}"></div>
-
 
 <header>
   <h1>Personal Journal Page</h1>
@@ -21,24 +19,29 @@
     <h2 id="h2">Recent Journal Entries</h2>
     <div class="entry-list">
       <ul>
-        <!-- Check if the entries list is empty -->
+        <!-- No entries message -->
         <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
           <p>You have not written any entries yet!</p>
         </li>
 
-        <!-- Loop through each journal entry in the 'entries' attribute -->
+        <!-- Loop through entries -->
         <li th:each="entry : ${entries}" class="journal-entry">
           <div class="story-item">
-            <div th:if="${entry.image}">
-              <img th:src="'data:image/png;base64,' + ${entry.image}" class="journal-image" alt="Generated Image"/>
+            <!-- only show if we have an imageUrl -->
+            <div th:if="${entry.imageUrl}">
+              <img th:src="${entry.imageUrl}"
+                   class="journal-image"
+                   alt="Journal entry image"/>
             </div>
 
             <div id="story-content">
-              <h3 th:text="${entry.title}" class="journal-title"></h3>
-              <h4 th:text="${entry.user.username}" class="journal-username"></h4> <!-- Display the username -->
-              <p th:text="${entry.content}" class="journal-text"></p> <!-- Display journal content -->
-              <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}" class="journal-timestamp"></small>
+              <h3 th:text="${entry.title}"        class="journal-title"></h3>
+              <h4 th:text="${entry.user.username}" class="journal-username"></h4>
+              <p  th:text="${entry.content}"      class="journal-text"></p>
+              <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
+                     class="journal-timestamp"></small>
             </div>
+
             <a th:href="@{'/journal/edit?id=' + ${entry.id}}">Edit</a>
           </div>
         </li>
