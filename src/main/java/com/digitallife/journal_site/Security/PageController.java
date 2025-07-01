@@ -5,14 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class PageController {
-
-    @GetMapping("/home")
-    public String showHomePage() {
-        return "home";
+    // e.g. home page only
+    @GetMapping("/")
+    public String home() {
+        return "home";  // home.html
     }
 
-    @GetMapping("/login")
-    public String showLoginPage() {
-        return "login";
-    }
+    // ← NO @GetMapping("/login") here!
 }

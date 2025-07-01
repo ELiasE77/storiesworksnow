@@ -28,6 +28,9 @@ public class UserDetailService implements UserDetailsService {
         Optional<User> user = repository.findByUsername(username);
         return user.orElse(null);  // Return the user if present, otherwise return null
     }
+    public User findById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
 
     /**
      * method was copied from a tutorial (https://www.youtube.com/watch?v=9J-b6OlPy24)
