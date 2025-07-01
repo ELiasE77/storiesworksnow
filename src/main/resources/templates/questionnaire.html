@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Questionnaire – Stories</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A67D8;
+            --accent: #667EEA;
+            --bg-start: #EDF2F7;
+            --bg-end: #E2E8F0;
+            --card-bg: #ffffff;
+            --text: #2D3748;
+            --text-light: #718096;
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%; max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            color: var(--primary);
+        }
+        .step { display: none; }
+        .step.active { display: block; }
+        .form-group { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: var(--text);
+        }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn[disabled] {
+            background: #A0AEC0;
+            cursor: not-allowed;
+        }
+        .btn:hover:not([disabled]) { background: var(--accent); }
+        .error { color: #E53E3E; font-size: 0.875rem; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Complete Your Profile</h1>
+    <form th:action="@{/profile/questionnaire}" th:object="${profile}" method="post">
+
+        <!-- Step 1: Gender -->
+        <div class="step active" data-step="1">
+            <div class="form-group">
+                <label for="gender">1. What is your gender?</label>
+                <select th:field="*{gender}" id="gender" required>
+                    <option value="" disabled selected>Select your gender</option>
+                    <option th:value="'Male'">Male</option>
+                    <option th:value="'Female'">Female</option>
+                    <option th:value="'Other'">Other</option>
+                </select>
+                <div class="error" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></div>
+            </div>
+        </div>
+
+        <!-- Step 2: Age -->
+        <div class="step" data-step="2">
+            <div class="form-group">
+                <label for="age">2. How old are you?</label>
+                <select th:field="*{age}" id="age" required>
+                    <option value="" disabled selected>Select age</option>
+                    <option th:each="i : ${#numbers.sequence(1,100)}" th:value="${i}" th:text="${i}"></option>
+                </select>
+                <div class="error" th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Height -->
+        <div class="step" data-step="3">
+            <div class="form-group">
+                <label for="height">3. What's your height?</label>
+                <input type="text" th:field="*{height}" id="height" placeholder="e.g. 5'8&quot; or 175cm" required/>
+                <div class="error" th:if="${#fields.hasErrors('height')}" th:errors="*{height}"></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Nationality -->
+        <div class="step" data-step="4">
+            <div class="form-group">
+                <label for="nationality">4. Where are you from?</label>
+                <input type="text" th:field="*{nationality}" id="nationality" placeholder="Your nationality" required/>
+                <div class="error" th:if="${#fields.hasErrors('nationality')}" th:errors="*{nationality}"></div>
+            </div>
+        </div>
+
+        <!-- Step 5: Hair Color -->
+        <div class="step" data-step="5">
+            <div class="form-group">
+                <label for="hair">5. What's your hair color?</label>
+                <select th:field="*{hair}" id="hair" required>
+                    <option value="" disabled selected>Select hair color</option>
+                    <option th:value="'Black'">Black</option>
+                    <option th:value="'Brown'">Brown</option>
+                    <option th:value="'Blonde'">Blonde</option>
+                    <option th:value="'Red'">Red</option>
+                    <option th:value="'Other'">Other</option>
+                </select>
+                <div class="error" th:if="${#fields.hasErrors('hair')}" th:errors="*{hair}"></div>
+            </div>
+        </div>
+
+        <!-- Step 6: Hobbies -->
+        <div class="step" data-step="6">
+            <div class="form-group">
+                <label for="hobbies">6. What are your hobbies?</label>
+                <textarea th:field="*{hobbies}" id="hobbies" rows="3" placeholder="List your hobbies" required></textarea>
+                <div class="error" th:if="${#fields.hasErrors('hobbies')}" th:errors="*{hobbies}"></div>
+            </div>
+        </div>
+
+        <!-- Step 7: Persona -->
+        <div class="step" data-step="7">
+            <div class="form-group">
+                <label for="persona">7. Why did you start Stories?</label>
+                <textarea th:field="*{persona}" id="persona" rows="3" placeholder="Tell us a bit more about yourself" required></textarea>
+                <div class="error" th:if="${#fields.hasErrors('persona')}" th:errors="*{persona}"></div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="buttons">
+            <button type="button" class="btn" id="prevBtn" disabled>Back</button>
+            <button type="button" class="btn" id="nextBtn">Next</button>
+            <button type="submit" class="btn" id="submitBtn" style="display:none;">Finish</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const steps = document.querySelectorAll('.step');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    let currentStep = 0;
+
+    function showStep(n) {
+        steps.forEach((step, i) => {
+            step.classList.toggle('active', i === n);
+        });
+        prevBtn.disabled = n === 0;
+        nextBtn.style.display = n === steps.length - 1 ? 'none' : 'inline-block';
+        submitBtn.style.display = n === steps.length - 1 ? 'inline-block' : 'none';
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) currentStep--;
+        showStep(currentStep);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStep < steps.length - 1) currentStep++;
+        showStep(currentStep);
+    });
+
+    // Initialize
+    showStep(currentStep);
+</script>
+</body>
+</html>

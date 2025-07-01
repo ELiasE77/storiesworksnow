@@ -27,31 +27,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // disable CSRF for simplicity (consider enabling in prod)
+                // disable CSRF for simplicity
                 .csrf(AbstractHttpConfigurer::disable)
 
                 // public URLs
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/register",        // GET registration form
-                                "/register/**",     // POST registration submission
-                                "/login",           // custom login page
-                                "/home",            // public home if you have one
+                                "/register",                   // registration form
+                                "/register/**",                // registration POST
+                                "/login",                      // login page
+                                "/home",
                                 "/css/**",
                                 "/images/**",
-                                "/js/**"
+                                "/js/**",
+                                "/profile/questionnaire"       // allow direct access to questionnaire
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
 
-                // form login customization
+                // form login
                 .formLogin(form -> form
-                        .loginPage("/login")          // your login.html
+                        .loginPage("/login")
                         .successHandler(successHandler)
                         .permitAll()
                 )
 
-                // logout support
+                // logout
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
@@ -79,4 +80,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

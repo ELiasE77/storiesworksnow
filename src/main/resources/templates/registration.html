@@ -1,23 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-</head>
-<body>
-<h1>Register</h1>
-<form action="/register" method="post">
-    <div>
-        <label for="username">Username</label>
-        <input type="text" id="username" name="username" required>
-    </div>
-    <div>
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <button type="submit">Create Account</button>
-</form>
-<p>Already have one? <a href="/login">Login</a></p>
-</body>
-</html>
+package com.digitallife.journal_site.user;
+
+import com.digitallife.journal_site.profile.Profile;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+public class RegisterController {
+
+private final UserDetailService userDetailService;
+private final PasswordEncoder passwordEncoder;
+
+public RegisterController(UserDetailService userDetailService,
+PasswordEncoder passwordEncoder) {
+this.userDetailService = userDetailService;
+this.passwordEncoder = passwordEncoder;
+}
+
+@GetMapping("/register")
+public String showRegistrationForm(Model model) {
+model.addAttribute("userDto", new UserDto());
+return "register";            // register.html
+}
+
+@PostMapping("/register")
+public String processRegistration(
+@ModelAttribute("userDto") @Valid UserDto dto,
+BindingResult binding,
+HttpSession session,
+Model model
+) {
+System.out.println(">>> HIT register POST: " + dto.getUsername());
+
+if (binding.hasErrors()) {
+return "register";
+}
+if (userDetailService.existsByUsername(dto.getUsername())) {
+model.addAttribute("usernameError", "That username is already taken.");
+return "register";
+}
+
+// 1) Create & save new User
+User user = new User();
+user.setUsername(dto.getUsername());
+user.setPassword(passwordEncoder.encode(dto.getPassword()));
+user.setRole("USER");
+userDetailService.saveUser(user);
+
+// 2) Put userId in session
+session.setAttribute("currentUserId", user.getId());
+
+// 3) Auto-login
+Authentication auth = new UsernamePasswordAuthenticationToken(
+userDetailService.loadUserByUsername(user.getUsername()),
+null,
+userDetailService.loadUserByUsername(user.getUsername()).getAuthorities()
+);
+SecurityContextHolder.getContext().setAuthentication(auth);
+
+// 4) **Forward** into your existing questionnaire GET (in ProfileController)
+return "forward:/profile/questionnaire";
+}
+}

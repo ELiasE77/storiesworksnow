@@ -35,8 +35,8 @@ a:hover {
 .profile-header {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Align items to the start */
-    margin-bottom: 20px;
+    justify-content: flex-start;
+    margin-bottom: 30px;
 }
 
 /* Profile picture */
@@ -58,7 +58,6 @@ a:hover {
     font-size: 24px;
     color: #333;
 }
-
 .profile-info p {
     font-size: 16px;
     color: #555;
@@ -68,20 +67,17 @@ a:hover {
 .follower-info {
     display: flex;
     gap: 20px;
-}
-
-.follower-info p {
     margin-top: 10px;
+}
+.follower-info p {
     font-size: 14px;
 }
 
 /* Profile Actions (Follow/Unfollow Button) */
 .profile-actions {
     margin-left: 20px;
-    flex-shrink: 0; /* Prevent the button from shrinking */
-
+    flex-shrink: 0;
 }
-
 #follow-btn {
     padding: 10px 20px;
     background-color: #007bff;
@@ -91,73 +87,54 @@ a:hover {
     border-radius: 5px;
     transition: background-color 0.3s ease;
 }
-
 #follow-btn:hover {
     background-color: #0056b3;
 }
 
-.btn-follow {
-    background-color: #28a745;
+/* Profile Details */
+.profile-details {
+    margin-top: 20px;
 }
-
-.btn-follow:hover {
-    background-color: #218838;
-}
-
-/* Communities section */
-.communities-section h3 {
+.profile-details h3 {
     font-size: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    color: #333;
 }
-
-.communities-section ul {
-    list-style: none;
-    padding-left: 0;
+.profile-details dl {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    row-gap: 10px;
+    column-gap: 20px;
 }
-
-.communities-section ul li {
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-}
-
-.communities-section ul li:last-child {
-    border-bottom: none;
-}
-
-.communities-section ul li a {
-    font-size: 16px;
-}
-
-/* Journal section */
-.journal-section h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-}
-
-.journal-section ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-.journal-item {
-    padding: 10px 0;
-    border-bottom: 1px solid #ddd;
-}
-
-.journal-item h4 {
-    font-size: 18px;
-    margin-bottom: 5px;
-}
-
-.journal-item p {
-    font-size: 14px;
+.profile-details dt {
+    font-weight: bold;
     color: #555;
 }
-
-.journal-item small {
-    color: #888;
+.profile-details dd {
+    color: #333;
+    line-height: 1.4;
 }
 
-.journal-item:last-child {
-    border-bottom: none;
+/* Persona Overview */
+.persona-section {
+    margin-top: 30px;
+}
+.persona-section h4 {
+    font-size: 18px;
+    margin-top: 15px;
+    color: #333;
+}
+.persona-section p {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+    line-height: 1.6;
+    color: #444;
+    border: 1px solid #e0e0e0;
+}
+
+/* Remove old sections */
+.communities-section,
+.journal-section {
+    display: none;
 }
