@@ -3,6 +3,9 @@ package com.digitallife.journal_site.Journal;
 import com.digitallife.journal_site.communities.Community;
 import com.digitallife.journal_site.communities.CommunityRepository;
 import com.digitallife.journal_site.exceptions.ResourceNotFoundException;
+import com.digitallife.journal_site.profile.PersonaService;
+import com.digitallife.journal_site.profile.Profile;
+import com.digitallife.journal_site.profile.ProfileRepository;
 import com.digitallife.journal_site.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,12 @@ public class JournalService {
 
     @Autowired
     private CommunityRepository communityRepository;
+
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    private PersonaService personaService;
 
     public void saveJournalEntry(
             User user,
@@ -43,6 +52,17 @@ public class JournalService {
             entry.setCommunity(c);
         }
         journalEntryRepository.save(entry);
+
+        // Update persona feature with key elements of this entry
+        Profile profile = profileRepository.findByUserId(user.getId()).orElse(null);
+        if (profile != null) {
+            try {
+                String updated = personaService.updatePersonaFeature(profile, content);
+                profile.setPersonaFeature(updated);
+                profileRepository.saveAndFlush(profile);
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     public void updateJournalEntry(

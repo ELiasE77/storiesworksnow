@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/profile")
@@ -41,6 +42,7 @@ public class ProfileController {
     @PostMapping("/questionnaire")
     public String submitQuestionnaire(
             @ModelAttribute("profile") Profile formData,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             HttpSession session
     ) {
         Long userId = (Long) session.getAttribute("currentUserId");
@@ -60,6 +62,7 @@ public class ProfileController {
         p.setUser(user);
 
         // Copy in all questionnaire fields
+        p.setName(formData.getName());
         p.setGender(formData.getGender());
         p.setAge(formData.getAge());
         p.setHeight(formData.getHeight());
@@ -68,15 +71,74 @@ public class ProfileController {
         p.setHobbies(formData.getHobbies());
         p.setPersona(formData.getPersona());
 
-        // Regenerate persona-feature
-        String feature = personaService.generatePersonaFeature(p);
-        p.setPersonaFeature(feature);
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                java.nio.file.Path dir = java.nio.file.Paths.get("uploads");
+                java.nio.file.Files.createDirectories(dir);
+                String filename = "profile_" + userId + "_" + profileImage.getOriginalFilename();
+                java.nio.file.Path path = dir.resolve(filename);
+                profileImage.transferTo(path.toFile());
+                p.setImageUrl("/uploads/" + filename);
+                p.setAppearanceJson(personaService.analyseImage(path, userId));
+            } catch (Exception e) {
+                p.setImageUrl(null);
+            }
+        }
+
+        // Generate persona feature using OpenAI
+        try {
+            String feature = personaService.generatePersonaFeature(p);
+            p.setPersonaFeature(feature);
+        } catch (Exception e) {
+            // fall back to empty text if generation fails
+            p.setPersonaFeature("");
+        }
 
         // Persist
-        profileRepo.save(p);
+        profileRepo.saveAndFlush(p);
 
-        // Redirect to their public profile
-        return "redirect:/profile/" + user.getUsername();
+        // Redirect to feature editing page so user can adjust the generated text
+        return "redirect:/profile/feature";
+    }
+
+    /** Show the persona feature edit form for the logged-in user. */
+    @GetMapping("/feature")
+    public String editFeatureForm(HttpSession session, Model model) {
+        Long userId = (Long) session.getAttribute("currentUserId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        Profile profile = profileRepo.findByUserId(userId).orElse(null);
+        if (profile == null) {
+            return "redirect:/profile/questionnaire";
+        }
+
+        model.addAttribute("profile", profile);
+        model.addAttribute("currentUsername", userDetailService.findById(userId).getUsername());
+        return "profile/editFeature";
+    }
+
+    /** Persist edits to the persona feature text. */
+    @PostMapping("/feature")
+    public String saveFeature(
+            @ModelAttribute("profile") Profile form,
+            HttpSession session
+    ) {
+        Long userId = (Long) session.getAttribute("currentUserId");
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        Profile profile = profileRepo.findByUserId(userId).orElse(null);
+        if (profile == null) {
+            return "redirect:/profile/questionnaire";
+        }
+
+        profile.setPersonaFeature(form.getPersonaFeature());
+        profileRepo.saveAndFlush(profile);
+
+        return "redirect:/profile/" + profile.getUser().getUsername();
     }
 
     @GetMapping(
@@ -107,6 +169,10 @@ public class ProfileController {
 
         // Otherwise render
         User user = userDetailService.findByUsername(username);
+        if (user == null) {
+            return "redirect:/";
+        }
+
         model.addAttribute("user", user);
         model.addAttribute("profile", profile);
         model.addAttribute("currentUsername",
@@ -118,6 +184,6 @@ public class ProfileController {
                 .anyMatch(u -> u.getId().equals(user.getId()));
         model.addAttribute("isFollowing", isFollowing);
 
-        return "userProfile";
+        return "user/userProfile";
     }
 }
