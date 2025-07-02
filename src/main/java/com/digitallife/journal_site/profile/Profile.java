@@ -18,6 +18,9 @@ public class Profile {
     private User user;
 
     @NotBlank
+    private String name;
+
+    @NotBlank
     private String gender;
 
     @NotNull @Min(1) @Max(120)
@@ -40,7 +43,14 @@ public class Profile {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String persona;
 
-    /** The AI-generated 300–500-word “persona feature.” */
+    @Column(name = "image_url", columnDefinition = "MEDIUMTEXT")
+    private String imageUrl;
+
+    @Lob
+    @Column(name = "appearance_json", columnDefinition = "LONGTEXT")
+    private String appearanceJson;
+
+    /** The AI-generated persona feature (10–500 words). */
     @Lob
     @Column(name = "persona_feature", columnDefinition = "LONGTEXT")
     private String personaFeature;
@@ -65,6 +75,9 @@ public class Profile {
     }
 
     // ——— Rest of your bean properties ———
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
 
@@ -88,4 +101,10 @@ public class Profile {
 
     public String getPersonaFeature() { return personaFeature; }
     public void setPersonaFeature(String personaFeature) { this.personaFeature = personaFeature; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getAppearanceJson() { return appearanceJson; }
+    public void setAppearanceJson(String appearanceJson) { this.appearanceJson = appearanceJson; }
 }

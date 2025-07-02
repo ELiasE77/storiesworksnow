@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit Persona Feature</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+</head>
+<body>
+<div th:replace="~{navbar :: navbar(currentUsername=${currentUsername})}"></div>
+<div class="container">
+    <h2>Edit Persona Feature</h2>
+    <form th:action="@{/profile/feature}" th:object="${profile}" method="post">
+        <textarea th:field="*{personaFeature}" rows="15" style="width:100%"></textarea>
+        <div style="margin-top:1rem;">
+            <button type="submit">Save</button>
+            <a th:href="@{'/profile/' + ${currentUsername}}">Cancel</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>
