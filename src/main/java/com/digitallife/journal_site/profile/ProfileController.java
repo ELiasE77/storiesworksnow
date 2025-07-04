@@ -2,6 +2,9 @@ package com.digitallife.journal_site.profile;
 
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,9 +27,30 @@ public class ProfileController {
         this.personaService    = personaService;
     }
 
+    /**
+     * Resolve the current user's id. Falls back to the security context if the
+     * session attribute is missing.
+     */
+    private Long getCurrentUserId(HttpSession session) {
+        Long id = (Long) session.getAttribute("currentUserId");
+        if (id != null) {
+            return id;
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()
+                && !(auth instanceof AnonymousAuthenticationToken)) {
+            User user = userDetailService.findByUsername(auth.getName());
+            if (user != null) {
+                session.setAttribute("currentUserId", user.getId());
+                return user.getId();
+            }
+        }
+        return null;
+    }
+
     @GetMapping("/questionnaire")
     public String showQuestionnaire(HttpSession session, Model model) {
-        Long userId = (Long) session.getAttribute("currentUserId");
+        Long userId = getCurrentUserId(session);
         if (userId == null) {
             return "redirect:/login";
         }
@@ -45,7 +69,7 @@ public class ProfileController {
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("currentUserId");
+        Long userId = getCurrentUserId(session);
         if (userId == null) {
             return "redirect:/login";
         }
@@ -73,9 +97,10 @@ public class ProfileController {
 
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
-                java.nio.file.Path dir = java.nio.file.Paths.get("uploads");
+                java.nio.file.Path dir = java.nio.file.Paths.get("uploads").toAbsolutePath();
                 java.nio.file.Files.createDirectories(dir);
-                String filename = "profile_" + userId + "_" + profileImage.getOriginalFilename();
+                String original = java.nio.file.Paths.get(profileImage.getOriginalFilename()).getFileName().toString();
+                String filename = "profile_" + userId + "_" + original;
                 java.nio.file.Path path = dir.resolve(filename);
                 profileImage.transferTo(path.toFile());
                 p.setImageUrl("/uploads/" + filename);
@@ -104,7 +129,7 @@ public class ProfileController {
     /** Show the persona feature edit form for the logged-in user. */
     @GetMapping("/feature")
     public String editFeatureForm(HttpSession session, Model model) {
-        Long userId = (Long) session.getAttribute("currentUserId");
+        Long userId = getCurrentUserId(session);
         if (userId == null) {
             return "redirect:/login";
         }
@@ -125,7 +150,7 @@ public class ProfileController {
             @ModelAttribute("profile") Profile form,
             HttpSession session
     ) {
-        Long userId = (Long) session.getAttribute("currentUserId");
+        Long userId = getCurrentUserId(session);
         if (userId == null) {
             return "redirect:/login";
         }
@@ -155,7 +180,7 @@ public class ProfileController {
                 .orElse(null);
 
         // Get current user (if logged in)
-        Long currentId = (Long) session.getAttribute("currentUserId");
+        Long currentId = getCurrentUserId(session);
         User current = currentId == null
                 ? null
                 : userDetailService.findById(currentId);

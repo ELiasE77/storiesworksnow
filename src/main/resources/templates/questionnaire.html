@@ -198,6 +198,9 @@
             <div class="form-group">
                 <label for="profileImage">9. Upload a profile picture</label>
                 <input type="file" id="profileImage" name="profileImage" accept="image/*" />
+                <div th:if="${profile.imageUrl}" style="margin-top:0.5rem;">
+                    <img th:src="${profile.imageUrl}" alt="Current picture" style="max-width:100px;"/>
+                </div>
             </div>
         </div>
 
@@ -222,34 +225,38 @@
     const genderOther  = document.getElementById('genderOther');
     const genderField  = document.getElementById('gender');
 
-    genderSelect.addEventListener('change', () => {
-        if (genderSelect.value === 'Other') {
-            genderOther.style.display = 'block';
-            genderField.value = genderOther.value;
-        } else {
-            genderOther.style.display = 'none';
-            genderField.value = genderSelect.value;
+    function initSelect(select, otherInput, field) {
+        const current = field.value;
+        if (current) {
+            const match = Array.from(select.options).find(o => o.value === current);
+            if (match) {
+                select.value = current;
+            } else {
+                select.value = 'Other';
+                otherInput.style.display = 'block';
+                otherInput.value = current;
+            }
         }
-    });
-    genderOther.addEventListener('input', () => {
-        genderField.value = genderOther.value;
-    });
+        select.addEventListener('change', () => {
+            if (select.value === 'Other') {
+                otherInput.style.display = 'block';
+                field.value = otherInput.value;
+            } else {
+                otherInput.style.display = 'none';
+                field.value = select.value;
+            }
+        });
+        otherInput.addEventListener('input', () => {
+            field.value = otherInput.value;
+        });
+    }
+
+    initSelect(genderSelect, genderOther, genderField);
 
     const hairSelect = document.getElementById('hairSelect');
     const hairOther  = document.getElementById('hairOther');
     const hairField  = document.getElementById('hair');
-    hairSelect.addEventListener('change', () => {
-        if (hairSelect.value === 'Other') {
-            hairOther.style.display = 'block';
-            hairField.value = hairOther.value;
-        } else {
-            hairOther.style.display = 'none';
-            hairField.value = hairSelect.value;
-        }
-    });
-    hairOther.addEventListener('input', () => {
-        hairField.value = hairOther.value;
-    });
+    initSelect(hairSelect, hairOther, hairField);
 
     function showStep(n) {
         steps.forEach((step, i) => {
