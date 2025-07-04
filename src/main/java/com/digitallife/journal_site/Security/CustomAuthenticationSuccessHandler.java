@@ -1,5 +1,7 @@
 package com.digitallife.journal_site.Security;
 
+import com.digitallife.journal_site.user.User;
+import com.digitallife.journal_site.user.UserDetailService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -12,12 +14,21 @@ import java.io.IOException;
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
+    private final UserDetailService userService;
+
+    public CustomAuthenticationSuccessHandler(UserDetailService userService) {
+        this.userService = userService;
+    }
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        // Redirect to the desired page after successful login
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+        if (user != null) {
+            request.getSession().setAttribute("currentUserId", user.getId());
+        }
         response.sendRedirect("/journal/home");
     }
 }
-
