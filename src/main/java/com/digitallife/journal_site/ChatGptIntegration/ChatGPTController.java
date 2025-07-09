@@ -77,10 +77,19 @@ public class ChatGPTController {
         String journalText = request.get("journalText");
         String style = request.get("style");
 
-        //create a prompt to dall e 3 api
-        String prompt = "Create a " + style + " image of one of the positive moments of the following journal:\n\n" + journalText;
+        String pictureType = request.getOrDefault("pictureType", "regular");
+        String persona = request.getOrDefault("persona", "");
+        if ("none".equalsIgnoreCase(pictureType)) {
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
+                    .body("{\"base64Image\":\"\"}");
+        }
 
-
+        String prompt;
+        if ("personalized".equalsIgnoreCase(pictureType)) {
+            prompt = "Create a " + style + " image based on the user's persona (" + persona + ") and the journal text. Focus on a positive moment: \n\n" + journalText;
+        } else {
+            prompt = "Create a " + style + " image of one positive moment from the following journal. Focus on location and objects only, no people:\n\n" + journalText;
+        }
         String url = "https://api.openai.com/v1/images/generations";
         RestTemplate restTemplate = new RestTemplate();
 

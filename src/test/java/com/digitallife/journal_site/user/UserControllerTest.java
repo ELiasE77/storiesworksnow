@@ -23,7 +23,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.security.Principal;
 
+import com.digitallife.journal_site.profile.Profile;
+import com.digitallife.journal_site.profile.ProfileRepository;
+
+
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.Optional;
 
 @WebMvcTest(UserController.class)
 class UserControllerTest {
@@ -33,6 +38,9 @@ class UserControllerTest {
 
     @MockBean
     private UserDetailService userDetailService; // Mock the UserDetailService
+
+    @MockBean
+    private ProfileRepository profileRepo;
 
     @Mock
     private Authentication authentication; // Mock the authentication
@@ -61,6 +69,11 @@ class UserControllerTest {
         User mockUser = new User();
         mockUser.setUsername("testuser");
 
+        Profile mockProfile = new Profile();
+        when(profileRepo.findByUserUsername("testuser"))
+                .thenReturn(Optional.of(mockProfile));
+
+
         // Mock the userDetailService to return the mock user when called
         when(userDetailService.findByUsername("testuser")).thenReturn(mockUser);
 
@@ -82,6 +95,11 @@ class UserControllerTest {
         // Create a mock user object
         User mockUser = new User();
         mockUser.setUsername("testuser");
+
+        Profile mockProfile = new Profile();
+        when(profileRepo.findByUserUsername("testuser"))
+                .thenReturn(Optional.of(mockProfile));
+
 
         // Mock the userDetailService to return the mock user when called
         when(userDetailService.findByUsername("testuser")).thenReturn(mockUser);
