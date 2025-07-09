@@ -24,6 +24,7 @@ public class JournalController {
     @Autowired private UserDetailService  userService;
     @Autowired private CommunityService   communityService;
     @Autowired private ChatGPTController  chatGptController;
+    @Autowired private com.digitallife.journal_site.profile.ProfileRepository profileRepository;
 
     // 1) Show the “new entry” form
     @GetMapping("/journal")
@@ -150,6 +151,8 @@ public class JournalController {
                 journalService.findJournalEntryById(id));
         model.addAttribute("communities",
                 communityService.findCommunityByUsername(auth.getName()));
+        profileRepository.findByUserUsername(auth.getName())
+                .ifPresent(p -> model.addAttribute("personaFeature", p.getPersonaFeature()));
         return "journaling/journal_editing";
     }
 

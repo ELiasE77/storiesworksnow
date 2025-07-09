@@ -16,15 +16,16 @@ styleOptions.forEach(option => {
     });
 });
 
-async function generateImageFromJournalEntry(text, style) {
-    const response = await fetch('/api/generate-image', {
+async function generateImageFromJournalEntry(text, style, type, persona) {    const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             journalText: text,
-            style: style
+            style: style,
+            pictureType: type,
+            persona: persona
         })
     });
 
@@ -51,7 +52,9 @@ document.getElementById('generate-image').addEventListener('click', async functi
         generateButton.disabled = true;
 
         try {
-            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle);
+            const pictureType = document.getElementById('pictureType').value;
+            const persona = document.getElementById('persona-feature') ? document.getElementById('persona-feature').value : '';
+            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle, pictureType, persona);
 
             const imageElement = document.getElementById('generated-image');
             imageElement.src = `data:image/png;base64,${base64Image}`;

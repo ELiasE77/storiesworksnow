@@ -74,6 +74,12 @@
       <div id="speechIndicator">🎤 Listening...</div>
 
       <h2>Select Image Style</h2>
+      <label for="pictureType">Picture option:</label>
+      <select id="pictureType">
+        <option value="regular">Regular</option>
+        <option value="personalized">Personalized (experimental)</option>
+        <option value="none">No picture</option>
+      </select>
       <div class="style-selection">
         <img th:src="@{/images/minimalist_style.png}"
              class="style-option"
@@ -96,6 +102,7 @@
              name="selected-style"
              id="selected-style"
              value="minimalist">
+      <input type="hidden" id="persona-feature" th:value="${personaFeature}">
 
       <div id="feedback">
         <h3>AI Feedback</h3>
@@ -113,6 +120,17 @@
         <p>Generating image, please wait...</p>
       </div>
     </form>
+
+    <div id="reflection-section">
+      <input type="hidden" id="entryId" th:value="${entry.id}" />
+      <h3>Reflection chat</h3>
+      <textarea id="reflection-input" placeholder="Type your reflection..."></textarea>
+      <div class="button-group">
+        <button type="button" id="end-reflection">End Reflection</button>
+        <button type="button" id="reply-button">Reply</button>
+      </div>
+      <div id="reflection-history"></div>
+    </div>
 
     <div class="button-group">
       <a th:href="@{/journal/home}" class="cancel-button">Cancel</a>
@@ -133,6 +151,6 @@
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
 <script th:src="@{/js/pageSpecific/deleteJournalEntry.js}"></script>
-
+<script th:src="@{/js/chatGPTIntegration/reflectionChat.js}"></script>
 </body>
 </html>

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.digitallife.journal_site.profile.ProfileRepository;
+
 import java.security.Principal;
 
 /**
@@ -22,6 +24,9 @@ public class UserController {
     @Autowired
     private UserDetailService userDetailService;
 
+    // Access to Profile records for persona details
+    @Autowired
+    private ProfileRepository profileRepo;
 
     /**
      * show to profile page of the current user
@@ -37,9 +42,14 @@ public class UserController {
 
         User user = userDetailService.findByUsername(currentUsername);
 
+        // Fetch persona details if present
+        var profile = profileRepo.findByUserUsername(currentUsername).orElse(null);
+
         model.addAttribute("isFollowing", true);
         model.addAttribute("user", user);
+        model.addAttribute("profile", profile);
         model.addAttribute("currentUsername", currentUsername);
+
 
         return "user/userProfile";
     }
@@ -61,11 +71,15 @@ public class UserController {
         // Find the profile user
         User profileUser = userDetailService.findByUsername(username);
 
+        // Associated persona if available
+        var profile = profileRepo.findByUserUsername(username).orElse(null);
+
         // Check if the current user is already following the profile user
         boolean isFollowing = currentUser.getFollowing().contains(profileUser);
 
         // Add the necessary data to the model
         model.addAttribute("user", profileUser);
+        model.addAttribute("profile", profile);
         model.addAttribute("isFollowing", isFollowing);
         model.addAttribute("currentUsername", currentUsername);
 
