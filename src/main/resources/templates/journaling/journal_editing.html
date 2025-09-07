@@ -21,8 +21,8 @@
   </div>
 
   <div class="form-section">
-    <form th:action="@{/journal/update}" method="post">
-      <input type="hidden" name="id" th:value="${entry.id}" />
+    <form th:action="@{/journal/update(id=${entry.id})}" method="post">
+
 
       <textarea name="title"
                 id="titleText"
@@ -54,7 +54,7 @@
            th:if="${entry.visibility.name() == 'COMMUNITY'}"
            style="display: block;">
         <label for="community">Select Community:</label>
-        <select name="community" id="community">
+        <select name="communityId" id="community">
           <option value="" disabled>Select a community</option>
           <option th:each="community : ${communities}"
                   th:value="${community.id}"

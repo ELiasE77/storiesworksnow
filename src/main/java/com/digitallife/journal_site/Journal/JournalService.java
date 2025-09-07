@@ -75,7 +75,7 @@ public class JournalService {
     ) {
         JournalEntry entry = journalEntryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entry not found"));
-        entry.setTitle(title);
+        entry.setTitle(title != null ? title : entry.getTitle());
         entry.setContent(content);
         entry.setVisibility(visibility);
         entry.setImageUrl(imageUrl);
