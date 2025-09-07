@@ -64,11 +64,20 @@
         </dependency>
 
         <!-- Database Drivers -->
+        <!-- MySQL (kept, in case you use it elsewhere) -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
+        <!-- MariaDB (preferred for Raspberry Pi setup) -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+
+        <!-- H2 (in-memory DB for dev/tests) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
