@@ -160,8 +160,7 @@ public class JournalController {
     @PostMapping("/journal/update")
     public String updateJournalEntry(
             @RequestParam("id") Long id,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content,
+            @RequestParam(value="title", required = false) String title,            @RequestParam("content") String content,
             @RequestParam(value="imageUrl",    required=false) String imageUrl,
             @RequestParam("visibility")       JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) Long communityId
