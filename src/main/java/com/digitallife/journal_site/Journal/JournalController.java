@@ -60,7 +60,7 @@ public class JournalController {
                 user,
                 dto.getTitle(),
                 dto.getContent(),
-                dto.getImageUrl(),   // raw base64 string only
+                dto.getImageUrl(),   // raw base64 only
                 dto.getCommunityId(),
                 dto.getVisibility()
         );
@@ -139,7 +139,7 @@ public class JournalController {
             @RequestParam("visibility") JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) Long communityId
     ) {
-        // No prefixing here, keep DB clean
+        // ✅ no prefixing — keep raw base64 in DB
         journalService.updateJournalEntry(
                 id, title, content, imageUrl, visibility, communityId
         );
