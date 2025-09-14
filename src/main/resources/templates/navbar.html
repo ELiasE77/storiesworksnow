@@ -7,13 +7,15 @@
 <div th:fragment="navbar">
     <nav>
         <ul>
-            <li><a th:href="@{/home}">Home</a></li>
+            <li><a th:href="@{/}">Home</a></li>
+
             <li><a th:href="@{/journal}">Journal Entry</a></li>
             <li><a th:href="@{/journal/sharePage}">Social</a></li>
             <li><a th:href="@{/journal/home}">Your Entries</a></li>
             <li><a th:href="@{/journal/timeline}">Your Timeline</a></li>
             <li><a th:href="@{/communities/user}">Your Communities</a></li>
             <li><a th:href="@{/communities/communityOverview}">Discover Communities</a></li>
+
             <li style="float: right">
                 <a th:href="@{'/profile/' + ${currentUsername}}">Profile</a>
             </li>
@@ -22,3 +24,4 @@
 </div>
 </body>
 </html>
+

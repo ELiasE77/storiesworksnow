@@ -12,31 +12,35 @@
 <div class="edit-container">
   <h1>Edit Journal Entry</h1>
 
-  <div class="image-section">
+  <!-- Current image preview -->
+  <div class="image-section" th:if="${entry.imageUrl}">
     <img id="current-image"
-         th:if="${entry.imageUrl}"
          th:src="'data:image/png;base64,' + ${entry.imageUrl}"
          alt="Current Journal Entry Image"
          style="max-width: 100%;" />
   </div>
 
   <div class="form-section">
+    <!-- Form for updating entry -->
     <form th:action="@{/journal/update(id=${entry.id})}" method="post">
 
-
+      <!-- Title -->
       <textarea name="title"
                 id="titleText"
                 th:text="${entry.title}"></textarea>
 
+      <!-- Content -->
       <textarea name="content"
                 id="journal-content"
                 th:text="${entry.content}"></textarea>
 
+      <!-- Hidden field for raw base64 image -->
       <input type="hidden"
              name="imageUrl"
              id="imageUrl"
              th:value="${entry.imageUrl}" />
 
+      <!-- Visibility selector -->
       <label for="visibility">Visibility:</label>
       <select name="visibility"
               id="visibility"
@@ -50,6 +54,7 @@
                 th:selected="${entry.visibility.name() == 'COMMUNITY'}">Community</option>
       </select>
 
+      <!-- Community selector (shown only if COMMUNITY visibility) -->
       <div id="community-selector"
            th:if="${entry.visibility.name() == 'COMMUNITY'}"
            style="display: block;">
@@ -64,6 +69,7 @@
         </select>
       </div>
 
+      <!-- Action buttons -->
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
         <button type="button" id="get-feedback">Get Feedback</button>
@@ -71,8 +77,10 @@
         <button type="submit">Update</button>
       </div>
 
+      <!-- Speech indicator -->
       <div id="speechIndicator">🎤 Listening...</div>
 
+      <!-- Style selection -->
       <h2>Select Image Style</h2>
       <label for="pictureType">Picture option:</label>
       <select id="pictureType">
@@ -80,6 +88,7 @@
         <option value="personalized">Personalized (experimental)</option>
         <option value="none">No picture</option>
       </select>
+
       <div class="style-selection">
         <img th:src="@{/images/minimalist_style.png}"
              class="style-option"
@@ -98,17 +107,20 @@
              data-style="watercolor"
              alt="Watercolor Style">
       </div>
+
       <input type="hidden"
              name="selected-style"
              id="selected-style"
              value="minimalist">
       <input type="hidden" id="persona-feature" th:value="${personaFeature}">
 
+      <!-- AI Feedback -->
       <div id="feedback">
         <h3>AI Feedback</h3>
         <p id="feedback-text"></p>
       </div>
 
+      <!-- New generated image preview -->
       <div id="generated-image-container">
         <img id="generated-image"
              src=""
@@ -116,11 +128,13 @@
              style="display: none; max-width: 100%;" />
       </div>
 
+      <!-- Loading indicator -->
       <div id="loading-indicator" style="display: none;">
         <p>Generating image, please wait...</p>
       </div>
     </form>
 
+    <!-- Reflection chat -->
     <div id="reflection-section">
       <input type="hidden" id="entryId" th:value="${entry.id}" />
       <h3>Reflection chat</h3>
@@ -132,11 +146,13 @@
       <div id="reflection-history"></div>
     </div>
 
+    <!-- Cancel + Delete -->
     <div class="button-group">
       <a th:href="@{/journal/home}" class="cancel-button">Cancel</a>
       <button type="button" class="delete-button" id="deleteButton">Delete</button>
     </div>
 
+    <!-- Hidden delete form -->
     <form id="deleteForm"
           th:action="@{/journal/delete}"
           method="post"
@@ -146,6 +162,7 @@
   </div>
 </div>
 
+<!-- JS scripts -->
 <script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
 <script th:src="@{/js/chatGPTIntegration/textFeedback.js}"></script>
 <script th:src="@{/js/component/speechToText.js}"></script>

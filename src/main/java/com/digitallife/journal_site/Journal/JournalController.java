@@ -45,7 +45,6 @@ public class JournalController {
             @RequestBody JournalEntryDTO dto,
             Authentication auth
     ) throws Exception {
-        // find current user
         User user = userService.findByUsername(auth.getName());
         if (user == null) {
             return ResponseEntity
@@ -53,28 +52,21 @@ public class JournalController {
                     .body("{\"error\":\"User not found: "+ auth.getName() +"\"}");
         }
 
-        // default visibility if missing
         if (dto.getVisibility() == null) {
             dto.setVisibility(JournalEntry.Visibility.PRIVATE);
         }
 
-        // you could still do your ChatGPT‐fallback here if dto.getImageUrl() is blank…
-
-        // CALL YOUR existing void method:
         journalService.saveJournalEntry(
                 user,
                 dto.getTitle(),
                 dto.getContent(),
-                dto.getImageUrl(),
+                dto.getImageUrl(),   // raw base64 string only
                 dto.getCommunityId(),
                 dto.getVisibility()
         );
 
-        // simple success response
-        JSONObject resp = new JSONObject()
-                .put("status", "ok");
-        return ResponseEntity
-                .ok()
+        JSONObject resp = new JSONObject().put("status", "ok");
+        return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(resp.toString());
     }
@@ -84,12 +76,6 @@ public class JournalController {
     public String showUserJournals(Model model, Principal principal) {
         User user = userService.findByUsername(principal.getName());
         List<JournalEntry> entries = journalService.getEntriesByUser(user);
-        entries.forEach(e -> {
-            String url = e.getImageUrl();
-            if (url != null && !url.startsWith("data:")) {
-                e.setImageUrl("data:image/png;base64," + url);
-            }
-        });
         model.addAttribute("entries", entries);
         return "user/UserJournalEntries";
     }
@@ -97,14 +83,7 @@ public class JournalController {
     // 4) Public / social feed
     @GetMapping("/journal/sharePage")
     public String getAllJournalEntries(Model model) {
-        List<JournalEntry> entries =
-                journalService.findPublicEntriesSortedByTimestamp();
-        entries.forEach(e -> {
-            String url = e.getImageUrl();
-            if (url != null && !url.startsWith("data:")) {
-                e.setImageUrl("data:image/png;base64," + url);
-            }
-        });
+        List<JournalEntry> entries = journalService.findPublicEntriesSortedByTimestamp();
         model.addAttribute("entries", entries);
         return "social/social_home";
     }
@@ -127,12 +106,6 @@ public class JournalController {
 
         List<JournalEntry> entries =
                 journalService.findEntriesForMonthAndYear(user, selMonth, selYear);
-        entries.forEach(e -> {
-            String url = e.getImageUrl();
-            if (url != null && !url.startsWith("data:")) {
-                e.setImageUrl("data:image/png;base64," + url);
-            }
-        });
 
         model.addAttribute("selectedMonth", selMonth);
         model.addAttribute("selectedYear",  selYear);
@@ -160,14 +133,13 @@ public class JournalController {
     @PostMapping("/journal/update")
     public String updateJournalEntry(
             @RequestParam("id") Long id,
-            @RequestParam(value="title", required = false) String title,            @RequestParam("content") String content,
-            @RequestParam(value="imageUrl",    required=false) String imageUrl,
-            @RequestParam("visibility")       JournalEntry.Visibility visibility,
+            @RequestParam(value="title", required = false) String title,
+            @RequestParam("content") String content,
+            @RequestParam(value="imageUrl", required=false) String imageUrl,
+            @RequestParam("visibility") JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) Long communityId
     ) {
-        if (imageUrl != null && !imageUrl.startsWith("data:")) {
-            imageUrl = "data:image/png;base64," + imageUrl;
-        }
+        // No prefixing here, keep DB clean
         journalService.updateJournalEntry(
                 id, title, content, imageUrl, visibility, communityId
         );

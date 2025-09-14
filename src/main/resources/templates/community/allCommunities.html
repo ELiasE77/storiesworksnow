@@ -23,12 +23,11 @@
         <h2>List of Communities</h2>
         <div class="community-list">
             <ul>
-                <!-- loop through each community sent in the communityController class function showCommunityPage()-->
                 <li th:each="community : ${communities}" class="community-item">
                     <a th:href="@{'/communities/' + ${community.id}}" class="community-link">
                         <div class="community-details">
                             <h3 th:text="${community.name}"></h3>
-                            <p th:text="'Members: ' + ${#lists.size(community.users)}"></p> <!-- Show the number of members -->
+                            <p th:text="'Members: ' + ${#lists.size(community.users)}"></p>
 
                             <!-- Join form -->
                             <form th:action="@{'/communities/join/' + ${community.id}}" method="post">
