@@ -137,9 +137,26 @@ public class JournalController {
             @RequestParam("content") String content,
             @RequestParam(value="imageUrl", required=false) String imageUrl,
             @RequestParam("visibility") JournalEntry.Visibility visibility,
-            @RequestParam(value="communityId", required=false) Long communityId
+            @RequestParam(value="communityId", required=false) String communityIdStr
     ) {
-        // ✅ no prefixing — keep raw base64 in DB
+        // Strip data URL prefix if present
+        if (imageUrl != null && imageUrl.startsWith("data:image")) {
+            int comma = imageUrl.indexOf(',');
+            if (comma > 0) {
+                imageUrl = imageUrl.substring(comma + 1);
+            }
+        }
+
+        // Parse communityId safely
+        Long communityId = null;
+        if (communityIdStr != null && !communityIdStr.isBlank()) {
+            try {
+                communityId = Long.valueOf(communityIdStr);
+            } catch (NumberFormatException ignore) {
+                // leave null if invalid
+            }
+        }
+
         journalService.updateJournalEntry(
                 id, title, content, imageUrl, visibility, communityId
         );

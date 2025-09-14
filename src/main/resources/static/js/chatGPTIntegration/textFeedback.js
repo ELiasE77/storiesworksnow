@@ -4,9 +4,9 @@ async function getFeedbackFromServer(text) {
         const response = await fetch('/api/get-feedback', {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain'
+                'Content-Type': 'application/json'
             },
-            body: text
+            body: JSON.stringify({ content: text })
         });
 
         if (!response.ok) {
@@ -14,32 +14,31 @@ async function getFeedbackFromServer(text) {
         }
 
         const data = await response.json();
-        return data.choices[0].message.content.trim();
+        // Our controller now always returns { "feedback": "..." }
+        return data.feedback ? data.feedback.trim() : "No feedback received.";
     } catch (error) {
         console.error('Error fetching feedback:', error);
         throw error;
     }
-
 }
 
-// when clicking get feedback button it should use the get feedback function in ChatGPTController class and
-// put that text in the journal entry box
+// When clicking get feedback button, fetch feedback and show in UI
 document.getElementById('get-feedback').addEventListener('click', async function() {
     const journalText = document.getElementById('journal-content').value;
     const feedbackButton = document.getElementById('get-feedback');
 
     if (journalText) {
         document.getElementById('feedback-text').innerText = 'Generating feedback...';
-        feedbackButton.disable = true;
+        feedbackButton.disabled = true;
 
         try {
             const feedback = await getFeedbackFromServer(journalText);
             document.getElementById('feedback-text').innerText = feedback;
         } catch (error) {
-            document.getElementById('feedback-text').innerText = 'Error generating feedback. Please try again.';
-            console.error('Error fetching feedback:', error);
+            document.getElementById('feedback-text').innerText =
+                'Error generating feedback. Please try again.';
         } finally {
-            feedbackButton.disable = false;
+            feedbackButton.disabled = false;
         }
     } else {
         alert('Please write something in the journal first.');

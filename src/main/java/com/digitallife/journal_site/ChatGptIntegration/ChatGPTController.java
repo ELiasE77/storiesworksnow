@@ -30,8 +30,13 @@ public class ChatGPTController {
     /**
      * Endpoint: POST /api/get-feedback
      * Expects JSON like: { "content": "journal text here" }
+     * Returns: { "feedback": "..." }
      */
-    @PostMapping(value = "/get-feedback", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/get-feedback",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<String> getFeedback(@RequestBody Map<String, String> request) throws JSONException {
         if (OPENAI_API_KEY == null || OPENAI_API_KEY.isBlank()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -64,7 +69,7 @@ public class ChatGPTController {
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.setBearerAuth(OPENAI_API_KEY);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<String> entity = new HttpEntity<>(requestBody.toString(), headers);
@@ -72,7 +77,22 @@ public class ChatGPTController {
         // Call OpenAI API
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            return ResponseEntity.status(response.getStatusCode())
+                    .body("{\"error\":\"OpenAI returned no body\"}");
+        }
+
+        // Parse feedback text out of OpenAI response
+        JSONObject openaiResponse = new JSONObject(response.getBody());
+        String feedback = openaiResponse
+                .getJSONArray("choices")
+                .getJSONObject(0)
+                .getJSONObject("message")
+                .getString("content");
+
+        // Return clean JSON
+        JSONObject out = new JSONObject().put("feedback", feedback);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(out.toString());
     }
 
     /**
@@ -83,8 +103,13 @@ public class ChatGPTController {
      *   "pictureType": "regular|personalized|none",
      *   "persona": "optional persona info"
      * }
+     * Returns: { "base64Image": "..." }
      */
-    @PostMapping(value = "/generate-image", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+            value = "/generate-image",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<String> generateImage(@RequestBody Map<String, String> request) throws JSONException {
         if (OPENAI_API_KEY == null || OPENAI_API_KEY.isBlank()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -105,7 +130,7 @@ public class ChatGPTController {
         String prompt;
         if ("personalized".equalsIgnoreCase(pictureType)) {
             prompt = "Create a " + style + " image based on the user's persona (" + persona + ") "
-                    + "and the journal text. Focus on a positive moment: \n\n" + journalText;
+                    + "and the journal text. Focus on a positive moment:\n\n" + journalText;
         } else {
             prompt = "Create a " + style + " image of one positive moment from the following journal. "
                     + "Focus on location and objects only, no people:\n\n" + journalText;
@@ -124,13 +149,13 @@ public class ChatGPTController {
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + OPENAI_API_KEY);
+        headers.setBearerAuth(OPENAI_API_KEY);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
-        // Extract image URL from response
+        // Extract image URL
         String imageUrl;
         if (response.getStatusCode().is2xxSuccessful()) {
             JSONObject jsonResponse = new JSONObject(response.getBody());
@@ -139,13 +164,8 @@ public class ChatGPTController {
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         }
 
-        try {
-            // Fetch image from URL
-            URL urlObj = new URL(imageUrl);
-            InputStream inputStream = urlObj.openStream();
+        try (InputStream inputStream = new URL(imageUrl).openStream()) {
             byte[] imageBytes = inputStream.readAllBytes();
-
-            // Convert to Base64
             String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
             return ResponseEntity.ok()
