@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Community</title>
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <link rel="stylesheet" th:href="@{/css/community/communityCreator.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<header>
+    <h1>Create a New Community</h1>
+</header>
+
+<main>
+    <section class="create-community-container">
+        <form id="create-community-form" action="/communities/create" method="POST">
+            <label for="communityName">Community Name:</label>
+            <input type="text" id="communityName" name="communityName" placeholder="Enter community name" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" placeholder="Enter a brief description" required></textarea>
+
+            <div class="button-group">
+                <button type="submit">Create Community</button>
+                <button type="button" onclick="window.location.href='/communities/user'">Cancel</button>
+            </div>
+        </form>
+    </section>
+</main>
+
+</body>
+</html>
