@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Questionnaire – Stories</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #5A67D8;
+            --accent: #667EEA;
+            --bg-start: #EDF2F7;
+            --bg-end: #E2E8F0;
+            --card-bg: #ffffff;
+            --text: #2D3748;
+            --text-light: #718096;
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin:0; padding: 0; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%; max-width: 500px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            color: var(--primary);
+        }
+        .step { display: none; }
+        .step.active { display: block; }
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: #E2E8F0;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #CBD5E0;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            color: var(--text);
+        }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn[disabled] {
+            background: #A0AEC0;
+            cursor: not-allowed;
+        }
+        .btn:hover:not([disabled]) { background: var(--accent); }
+        .error { color: #E53E3E; font-size: 0.875rem; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Complete Your Profile</h1>
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <form th:action="@{/profile/questionnaire}" th:object="${profile}" method="post" enctype="multipart/form-data">
+
+        <!-- Step 1: Name -->
+        <div class="step active" data-step="1">
+            <div class="form-group">
+                <label for="name">1. What is your name?</label>
+                <input type="text" th:field="*{name}" id="name" required/>
+                <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+            </div>
+        </div>
+
+        <!-- Step 2: Gender -->
+        <div class="step" data-step="2">
+            <div class="form-group">
+                <label for="gender">1. What is your gender?</label>
+                <select id="genderSelect">
+                    <option value="" disabled selected>Select your gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="genderOther" placeholder="Please specify" style="display:none;margin-top:0.5rem;" />
+                <input type="hidden" th:field="*{gender}" id="gender" />
+                <div class="error" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></div>
+            </div>
+        </div>
+
+        <!-- Step 3: Age -->
+        <div class="step" data-step="3">
+            <div class="form-group">
+                <label for="age">3. How old are you?</label>
+                <select th:field="*{age}" id="age" required>
+                    <option value="" disabled selected>Select age</option>
+                    <option th:each="i : ${#numbers.sequence(1,100)}" th:value="${i}" th:text="${i}"></option>
+                </select>
+                <div class="error" th:if="${#fields.hasErrors('age')}" th:errors="*{age}"></div>
+            </div>
+        </div>
+
+        <!-- Step 4: Height -->
+        <div class="step" data-step="4">
+            <div class="form-group">
+                <label for="height">4. What's your height?</label>
+                <input type="text" th:field="*{height}" id="height" placeholder="e.g. 5'8&quot; or 175cm" required/>
+                <div class="error" th:if="${#fields.hasErrors('height')}" th:errors="*{height}"></div>
+            </div>
+        </div>
+
+        <!-- Step 5: Nationality -->
+        <div class="step" data-step="5">
+            <div class="form-group">
+                <label for="nationality">5. Where are you from?</label>
+                <input type="text" th:field="*{nationality}" id="nationality" placeholder="Your nationality" required/>
+                <div class="error" th:if="${#fields.hasErrors('nationality')}" th:errors="*{nationality}"></div>
+            </div>
+        </div>
+
+        <!-- Step 6: Hair Color -->
+        <div class="step" data-step="6">
+            <div class="form-group">
+                <label for="hair">6. What's your hair color?</label>
+                <select id="hairSelect">
+                    <option value="" disabled selected>Select hair color</option>
+                    <option value="Black">Black</option>
+                    <option value="Brown">Brown</option>
+                    <option value="Blonde">Blonde</option>
+                    <option value="Red">Red</option>
+                    <option value="Other">Other</option>
+                </select>
+                <input type="text" id="hairOther" placeholder="Please specify" style="display:none;margin-top:0.5rem;" />
+                <input type="hidden" th:field="*{hair}" id="hair" />
+                <div class="error" th:if="${#fields.hasErrors('hair')}" th:errors="*{hair}"></div>
+            </div>
+        </div>
+
+        <!-- Step 7: Hobbies -->
+        <div class="step" data-step="7">
+            <div class="form-group">
+                <label for="hobbies">7. What are your hobbies?</label>
+                <textarea th:field="*{hobbies}" id="hobbies" rows="3" placeholder="List your hobbies" required></textarea>
+                <div class="error" th:if="${#fields.hasErrors('hobbies')}" th:errors="*{hobbies}"></div>
+            </div>
+        </div>
+
+        <!-- Step 8: Persona -->
+        <div class="step" data-step="8">
+            <div class="form-group">
+                <label for="persona">8. Why did you start Stories?</label>
+                <textarea th:field="*{persona}" id="persona" rows="3" placeholder="Tell us a bit more about yourself" required></textarea>
+                <div class="error" th:if="${#fields.hasErrors('persona')}" th:errors="*{persona}"></div>
+            </div>
+        </div>
+
+        <!-- Step 9: Profile picture -->
+        <div class="step" data-step="9">
+            <div class="form-group">
+                <label for="profileImage">9. Upload a profile picture</label>
+                <input type="file" id="profileImage" name="profileImage" accept="image/*" />
+                <div th:if="${profile.imageUrl}" style="margin-top:0.5rem;">
+                    <img th:src="${profile.imageUrl}" alt="Current picture" style="max-width:100px;"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="buttons">
+            <button type="button" class="btn" id="prevBtn" disabled>Back</button>
+            <button type="button" class="btn" id="nextBtn">Next</button>
+            <button type="submit" class="btn" id="submitBtn" style="display:none;">Finish</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const steps = document.querySelectorAll('.step');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    let currentStep = 0;
+
+    const genderSelect = document.getElementById('genderSelect');
+    const genderOther  = document.getElementById('genderOther');
+    const genderField  = document.getElementById('gender');
+
+    function initSelect(select, otherInput, field) {
+        const current = field.value;
+        if (current) {
+            const match = Array.from(select.options).find(o => o.value === current);
+            if (match) {
+                select.value = current;
+            } else {
+                select.value = 'Other';
+                otherInput.style.display = 'block';
+                otherInput.value = current;
+            }
+        }
+        select.addEventListener('change', () => {
+            if (select.value === 'Other') {
+                otherInput.style.display = 'block';
+                field.value = otherInput.value;
+            } else {
+                otherInput.style.display = 'none';
+                field.value = select.value;
+            }
+        });
+        otherInput.addEventListener('input', () => {
+            field.value = otherInput.value;
+        });
+    }
+
+    initSelect(genderSelect, genderOther, genderField);
+
+    const hairSelect = document.getElementById('hairSelect');
+    const hairOther  = document.getElementById('hairOther');
+    const hairField  = document.getElementById('hair');
+    initSelect(hairSelect, hairOther, hairField);
+
+    function showStep(n) {
+        steps.forEach((step, i) => {
+            step.classList.toggle('active', i === n);
+        });
+        const pct = ((n) / (steps.length - 1)) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        prevBtn.disabled = n === 0;
+        nextBtn.style.display = n === steps.length - 1 ? 'none' : 'inline-block';
+        submitBtn.style.display = n === steps.length - 1 ? 'inline-block' : 'none';
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) currentStep--;
+        showStep(currentStep);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStep < steps.length - 1) currentStep++;
+        showStep(currentStep);
+    });
+
+    // Initialize
+    showStep(currentStep);
+</script>
+</body>
+</html>
