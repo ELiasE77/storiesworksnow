@@ -55,7 +55,10 @@ public class ChatGPTController {
         JSONArray messages = new JSONArray();
         messages.put(new JSONObject()
                 .put("role", "system")
-                .put("content", "You are an assistant that gives constructive feedback on journal entries."));
+                .put("content",
+                        "You are an assistant that gives constructive feedback on journal entries. " +
+                                "Your feedback should always be between 2 and 7 sentences, " +
+                                "concise yet helpful, and never longer than 200 words."));
         messages.put(new JSONObject()
                 .put("role", "user")
                 .put("content", "Give feedback on the following journal entry:\n\n" + journalEntry));
@@ -64,7 +67,7 @@ public class ChatGPTController {
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", FINE_TUNED_MODEL_ID);
         requestBody.put("messages", messages);
-        requestBody.put("max_tokens", 150);
+        requestBody.put("max_tokens", 1000);  // bumped up
         requestBody.put("temperature", 0.5);
 
         // Headers
