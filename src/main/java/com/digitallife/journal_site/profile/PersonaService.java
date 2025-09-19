@@ -6,6 +6,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * Service that communicates with OpenAI to generate and update
  * the long-form persona feature text.
@@ -14,24 +17,23 @@ import org.springframework.web.client.RestTemplate;
 public class PersonaService {
 
     private static final String OPENAI_API_KEY =
-            "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";
+            System.getenv("OPENAI_API_KEY");
     private static final String CHAT_URL = "https://api.openai.com/v1/chat/completions";
 
     private final RestTemplate rest = new RestTemplate();
 
     /**
-     * Analyse the uploaded image and return a JSON description. The JSON is
-     * also written to a <code>.jsonl</code> file next to the uploaded picture
-     * so the data can be reused for image generation.
+     * Analyse the uploaded image and return a JSON description.
+     * Also writes a `.jsonl` file next to the uploaded picture.
      */
-    public String analyseImage(java.nio.file.Path imgPath, Long userId) {
+    public String analyseImage(Path imgPath, Long userId) {
         try {
-            long size = java.nio.file.Files.size(imgPath);
+            long size = Files.size(imgPath);
             String json = new JSONObject().put("fileSize", size).toString();
 
-            java.nio.file.Path jsonPath = imgPath.getParent()
-                    .resolve("profile_" + userId + ".jsonl");
-            java.nio.file.Files.writeString(jsonPath, json + "\n");
+            Path jsonPath = imgPath.getParent().resolve("profile_" + userId + ".jsonl");
+            Files.writeString(jsonPath, json + "\n");
+
             return json;
         } catch (Exception e) {
             return "{}";
@@ -40,20 +42,33 @@ public class PersonaService {
 
     /**
      * Generates a persona feature from the questionnaire answers.
-     * The summary should start short (around 10 words) but may grow up to
-     * about 500 words as more journal entries are added. Only the
-     * supplied details may be used—no invented facts such as residence or
-     * names.
+     * Starts short (10–500 words), grows up to ~500 words with journal entries.
      */
     public String generatePersonaFeature(Profile profile) {
         try {
             JSONArray messages = new JSONArray();
+
+            // System prompt
             messages.put(new JSONObject()
                     .put("role", "system")
-                    .put("content", "Summarise the given details into a concise persona feature between 10 and 500 words. Do not invent any information."));
+                    .put("content",
+                            "You are a biographer crafting a warm, insightful third-person essay of ~500 words. "
+                                    + "Use only the provided details, do not invent any information."));
+
+            // User prompt
             String prompt = String.format("""
-%s is a %d-year-old %s, height %s, nationality %s, hair %s, hobbies %s. Outlook: %s
-""",
+                            %s is a %d-year-old %s, height %s, nationality %s, hair %s, hobbies %s.
+                            Outlook: %s
+
+                            Base profile information:
+                            %s
+
+                            Journal background / personal outlook:
+                            %s
+
+                            Task: Write an engaging third-person persona essay of 480–520 words that summarises who this person is. "
+                            "Highlight key personality traits, motivations, and themes from the supplied details without inventing facts.
+                            """,
                     profile.getName(),
                     profile.getAge(),
                     profile.getGender(),
@@ -61,17 +76,18 @@ public class PersonaService {
                     profile.getNationality(),
                     profile.getHair(),
                     profile.getHobbies(),
-                    profile.getPersona()
+                    profile.getPersona(),
+                    buildProfileOverview(profile),
+                    nullToEmpty(profile.getPersona())
             );
-            messages.put(new JSONObject()
-                    .put("role", "user")
-                    .put("content", prompt));
 
-            JSONObject body = new JSONObject();
-            body.put("model", "gpt-4o-mini");
-            body.put("messages", messages);
-            body.put("max_tokens", 750);
-            body.put("temperature", 0.7);
+            messages.put(new JSONObject().put("role", "user").put("content", prompt));
+
+            JSONObject body = new JSONObject()
+                    .put("model", "gpt-4o-mini")
+                    .put("messages", messages)
+                    .put("max_tokens", 1500)
+                    .put("temperature", 0.7);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -79,6 +95,7 @@ public class PersonaService {
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
+
             if (!resp.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("OpenAI API error: " + resp.getBody());
             }
@@ -105,18 +122,42 @@ public class PersonaService {
             }
 
             JSONArray messages = new JSONArray();
+
+            // System prompt
             messages.put(new JSONObject()
                     .put("role", "system")
-                    .put("content", "Update the persona feature between 10 and 500 words total. Incorporate factual information from the new entry while gradually expanding the summary."));
-            messages.put(new JSONObject()
-                    .put("role", "user")
-                    .put("content", "Current summary:" + current + "\nNew entry:" + entryContent));
+                    .put("content",
+                            "You maintain an evolving biography. "
+                                    + "Refresh it to roughly 500 words by weaving in the latest entry "
+                                    + "while preserving truthful details from the existing summary."));
 
-            JSONObject body = new JSONObject();
-            body.put("model", "gpt-4o-mini");
-            body.put("messages", messages);
-            body.put("max_tokens", 750);
-            body.put("temperature", 0.7);
+            // User prompt
+            String prompt = String.format("""
+                            Base profile information:
+                            %s
+
+                            Existing persona essay:
+                            %s
+
+                            Latest journal entry to incorporate:
+                            %s
+
+                            Task: Produce an updated third-person persona essay of 480–520 words. "
+                            "Preserve important facts from the existing essay and add any new insights from the latest entry. "
+                            "Avoid repetition and do not invent details beyond what has been provided.
+                            """,
+                    buildProfileOverview(profile),
+                    current,
+                    nullToEmpty(entryContent)
+            );
+
+            messages.put(new JSONObject().put("role", "user").put("content", prompt));
+
+            JSONObject body = new JSONObject()
+                    .put("model", "gpt-4o-mini")
+                    .put("messages", messages)
+                    .put("max_tokens", 1500)
+                    .put("temperature", 0.7);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -124,6 +165,7 @@ public class PersonaService {
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
+
             if (!resp.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("OpenAI API error: " + resp.getBody());
             }
@@ -137,5 +179,21 @@ public class PersonaService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to update persona feature", e);
         }
+    }
+
+    private String buildProfileOverview(Profile profile) {
+        StringBuilder sb = new StringBuilder();
+        if (profile.getName() != null) sb.append("Name: ").append(profile.getName()).append('\n');
+        if (profile.getAge() != null) sb.append("Age: ").append(profile.getAge()).append('\n');
+        if (profile.getGender() != null) sb.append("Gender: ").append(profile.getGender()).append('\n');
+        if (profile.getHeight() != null) sb.append("Height: ").append(profile.getHeight()).append('\n');
+        if (profile.getNationality() != null) sb.append("Nationality: ").append(profile.getNationality()).append('\n');
+        if (profile.getHair() != null) sb.append("Hair: ").append(profile.getHair()).append('\n');
+        if (profile.getHobbies() != null) sb.append("Hobbies: ").append(profile.getHobbies()).append('\n');
+        return sb.toString().trim();
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 }
