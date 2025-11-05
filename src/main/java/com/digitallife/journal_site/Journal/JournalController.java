@@ -31,6 +31,8 @@ public class JournalController {
     public String showCreateForm(Model model, Authentication auth) {
         model.addAttribute("communities",
                 communityService.findCommunityByUsername(auth.getName()));
+        profileRepository.findByUserUsername(auth.getName())
+                .ifPresent(p -> model.addAttribute("personaFeature", p.getPersonaFeature()));
         return "journaling/journal";
     }
 

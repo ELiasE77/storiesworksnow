@@ -1,12 +1,26 @@
 // Function to call the Spring Boot API to get feedback
 async function getFeedbackFromServer(text) {
     try {
+        const payload = {
+            content: text
+        };
+
+        const entryIdField = document.getElementById('entryId');
+        if (entryIdField && entryIdField.value) {
+            payload.entryId = entryIdField.value;
+        }
+
+        const personaField = document.getElementById('persona-feature');
+        if (personaField && personaField.value) {
+            payload.persona = personaField.value;
+        }
+
         const response = await fetch('/api/get-feedback', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ content: text })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {

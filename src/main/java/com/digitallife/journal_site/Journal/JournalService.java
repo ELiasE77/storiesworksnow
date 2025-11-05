@@ -57,7 +57,8 @@ public class JournalService {
         Profile profile = profileRepository.findByUserId(user.getId()).orElse(null);
         if (profile != null) {
             try {
-                String updated = personaService.updatePersonaFeature(profile, content);
+                String highlights = buildRecentEntriesSummary(user);
+                String updated = personaService.updatePersonaFeature(profile, content, highlights);
                 profile.setPersonaFeature(updated);
                 profileRepository.saveAndFlush(profile);
             } catch (Exception ignore) {
@@ -86,6 +87,17 @@ public class JournalService {
             entry.setCommunity(c);
         }
         journalEntryRepository.save(entry);
+
+        Profile profile = profileRepository.findByUserId(entry.getUser().getId()).orElse(null);
+        if (profile != null) {
+            try {
+                String highlights = buildRecentEntriesSummary(entry.getUser());
+                String updated = personaService.updatePersonaFeature(profile, content, highlights);
+                profile.setPersonaFeature(updated);
+                profileRepository.saveAndFlush(profile);
+            } catch (Exception ignore) {
+            }
+        }
     }
 
     public List<JournalEntry> getEntriesByUser(User user) {
@@ -119,5 +131,26 @@ public class JournalService {
 
     public List<JournalEntry> findPublicEntriesSortedByTimestamp() {
         return journalEntryRepository.findByVisibilityOrderByTimestampDesc(JournalEntry.Visibility.PUBLIC);
+    }
+
+    private String buildRecentEntriesSummary(User user) {
+        List<JournalEntry> recent = journalEntryRepository.findTop5ByUserOrderByTimestampDesc(user);
+        StringBuilder sb = new StringBuilder();
+        for (JournalEntry entry : recent) {
+            sb.append(entry.getTimestamp().toLocalDate()).append(" — ");
+            if (entry.getTitle() != null && !entry.getTitle().isBlank()) {
+                sb.append(entry.getTitle()).append(": ");
+            }
+            String content = entry.getContent();
+            if (content != null) {
+                String trimmed = content.strip();
+                if (trimmed.length() > 160) {
+                    trimmed = trimmed.substring(0, 160) + "…";
+                }
+                sb.append(trimmed);
+            }
+            sb.append('\n');
+        }
+        return sb.toString().trim();
     }
 }

@@ -20,7 +20,7 @@
         <div class="entry-list">
             <ul>
                 <!-- Loop through each journal entry in the 'entries' attribute -->
-                <li th:each="entry : ${entries}" class="journal-entry">
+                <li th:each="entry : ${entries}" class="journal-entry" th:attr="data-entry-id=${entry.id}">
                     <div class="story-item">
                         <div th:if="${entry.imageUrl}">
                             <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
@@ -41,6 +41,30 @@
                             <p th:text="${entry.content}" class="journal-text"></p>
                             <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
                                    class="journal-timestamp"></small>
+                            <div class="interaction-bar">
+                                <button type="button"
+                                        class="like-button"
+                                        th:attr="data-entry-id=${entry.id}">
+                                    ❤️ <span class="like-count" th:text="${entry.likes.size()}">0</span>
+                                </button>
+                            </div>
+                            <div class="comments-section">
+                                <h5>Comments</h5>
+                                <ul class="comment-list">
+                                    <li th:each="comment : ${entry.comments}">
+                                        <strong th:text="${comment.author.username}">user</strong>:
+                                        <span th:text="${comment.content}">comment text</span>
+                                        <small class="comment-timestamp"
+                                               th:text="${#temporals.format(comment.timestamp, 'dd MMM yyyy HH:mm')}"></small>
+                                    </li>
+                                </ul>
+                                <form class="comment-form" th:attr="data-entry-id=${entry.id}">
+                                    <textarea name="comment"
+                                              rows="2"
+                                              placeholder="Share your thoughts…"></textarea>
+                                    <button type="submit">Post</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </li>
@@ -48,6 +72,8 @@
         </div>
     </section>
 </main>
+
+<script th:src="@{/js/social/socialInteractions.js}"></script>
 
 </body>
 </html>

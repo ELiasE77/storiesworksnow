@@ -101,11 +101,13 @@ public class PersonaService {
             }
 
             JSONObject json = new JSONObject(resp.getBody());
-            return json.getJSONArray("choices")
+            String feature = json.getJSONArray("choices")
                     .getJSONObject(0)
                     .getJSONObject("message")
                     .getString("content")
                     .trim();
+
+            return trimToMaxWords(feature, 500);
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate persona feature", e);
         }
@@ -114,8 +116,9 @@ public class PersonaService {
     /**
      * Update an existing persona feature with a new journal entry.
      */
-    public String updatePersonaFeature(Profile profile, String entryContent) {
-        try {
+    public String updatePersonaFeature(Profile profile,
+                                       String entryContent,
+                                       String recentEntriesSummary) {        try {
             String current = profile.getPersonaFeature();
             if (current == null || current.isBlank()) {
                 current = generatePersonaFeature(profile);
@@ -142,13 +145,17 @@ public class PersonaService {
                             Latest journal entry to incorporate:
                             %s
 
+                            Recent journal highlights:
+                            %s
+                            
                             Task: Produce an updated third-person persona essay of 480–520 words. "
                             "Preserve important facts from the existing essay and add any new insights from the latest entry. "
-                            "Avoid repetition and do not invent details beyond what has been provided.
+                            "Avoid repetition and do not invent details beyond what has been provided. Keep the final essay under 500 words.
                             """,
                     buildProfileOverview(profile),
                     current,
-                    nullToEmpty(entryContent)
+                    nullToEmpty(entryContent),
+                    nullToEmpty(recentEntriesSummary)
             );
 
             messages.put(new JSONObject().put("role", "user").put("content", prompt));
@@ -171,11 +178,13 @@ public class PersonaService {
             }
 
             JSONObject json = new JSONObject(resp.getBody());
-            return json.getJSONArray("choices")
+            String feature = json.getJSONArray("choices")
                     .getJSONObject(0)
                     .getJSONObject("message")
                     .getString("content")
                     .trim();
+
+        return trimToMaxWords(feature, 500);
         } catch (Exception e) {
             throw new RuntimeException("Failed to update persona feature", e);
         }
@@ -195,5 +204,24 @@ public class PersonaService {
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private String trimToMaxWords(String text, int maxWords) {
+        if (text == null) {
+            return "";
+        }
+        String[] words = text.trim().split("\\s+");
+        if (words.length <= maxWords) {
+            return text.trim();
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < maxWords; i++) {
+            sb.append(words[i]);
+            if (i < maxWords - 1) {
+                sb.append(' ');
+            }
+        }
+        sb.append("...");
+        return sb.toString();
     }
 }

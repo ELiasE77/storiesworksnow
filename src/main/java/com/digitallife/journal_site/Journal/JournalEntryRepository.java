@@ -15,6 +15,8 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
 
     List<JournalEntry> findByCommunityOrderByTimestampDesc(Community community);
 
+    List<JournalEntry> findTop5ByUserOrderByTimestampDesc(User user);
+
     @Query("""
       SELECT e
         FROM JournalEntry e

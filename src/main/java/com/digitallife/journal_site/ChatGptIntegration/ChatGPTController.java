@@ -1,16 +1,26 @@
 package com.digitallife.journal_site.ChatGptIntegration;
 
+import com.digitallife.journal_site.Journal.JournalEntry;
+import com.digitallife.journal_site.Journal.JournalEntryRepository;
+import com.digitallife.journal_site.profile.Profile;
+import com.digitallife.journal_site.profile.ProfileRepository;
+import com.digitallife.journal_site.user.User;
+import com.digitallife.journal_site.user.UserDetailService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Handles AI-powered features:
@@ -27,6 +37,17 @@ public class ChatGPTController {
     private static final String FINE_TUNED_MODEL_ID =
             "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
 
+    private final JournalEntryRepository journalEntryRepository;
+    private final ProfileRepository profileRepository;
+    private final UserDetailService userDetailService;
+
+    public ChatGPTController(JournalEntryRepository journalEntryRepository,
+                             ProfileRepository profileRepository,
+                             UserDetailService userDetailService) {
+        this.journalEntryRepository = journalEntryRepository;
+        this.profileRepository = profileRepository;
+        this.userDetailService = userDetailService;
+    }
     /**
      * Endpoint: POST /api/get-feedback
      * Expects JSON like: { "content": "journal text here" }
@@ -37,17 +58,27 @@ public class ChatGPTController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<String> getFeedback(@RequestBody Map<String, String> request) throws JSONException {
-        if (OPENAI_API_KEY == null || OPENAI_API_KEY.isBlank()) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"OPENAI_KEY environment variable is not set\"}");
-        }
+    public ResponseEntity<String> getFeedback(@RequestBody Map<String, String> request,
+                                              Authentication authentication) throws JSONException {
 
         String journalEntry = request.get("content");
         if (journalEntry == null || journalEntry.isBlank()) {
             return ResponseEntity.badRequest().body("{\"error\":\"Journal entry content missing\"}");
         }
+        Long entryId = parseLong(request.get("entryId"));
+        User contextUser = resolveContextUser(authentication, entryId);
 
+        String persona = request.getOrDefault("persona", "");
+        if ((persona == null || persona.isBlank()) && contextUser != null) {
+            Optional<Profile> profile = profileRepository.findByUserId(contextUser.getId());
+            persona = profile.map(Profile::getPersonaFeature).orElse("");
+        }
+
+        String historySummary = "";
+        if (contextUser != null) {
+            List<JournalEntry> recent = journalEntryRepository.findTop5ByUserOrderByTimestampDesc(contextUser);
+            historySummary = buildHistorySummary(recent, entryId);
+        }
         String url = "https://api.openai.com/v1/chat/completions";
         RestTemplate restTemplate = new RestTemplate();
 
@@ -59,10 +90,21 @@ public class ChatGPTController {
                         "You are an assistant that gives constructive feedback on journal entries. " +
                                 "Your feedback should always be between 2 and 7 sentences, " +
                                 "concise yet helpful, and never longer than 200 words."));
+
+
+        StringBuilder prompt = new StringBuilder("Give feedback on the following journal entry.\n\n");
+        prompt.append("Current entry:\n").append(journalEntry).append("\n\n");
+        if (historySummary != null && !historySummary.isBlank()) {
+            prompt.append("Recent journal highlights:\n").append(historySummary).append("\n\n");
+        }
+        if (persona != null && !persona.isBlank()) {
+            prompt.append("Persona snapshot:\n")
+                    .append(truncate(persona, 600))
+                    .append("\n\n");
+        }
         messages.put(new JSONObject()
                 .put("role", "user")
-                .put("content", "Give feedback on the following journal entry:\n\n" + journalEntry));
-
+                .put("content", prompt.toString()));
         // Request body
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", FINE_TUNED_MODEL_ID);
@@ -178,5 +220,68 @@ public class ChatGPTController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("{\"error\": \"Failed to fetch and encode image: " + e.getMessage() + "\"}");
         }
+    }
+
+    private Long parseLong(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private User resolveContextUser(Authentication authentication, Long entryId) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            User user = userDetailService.findByUsername(authentication.getName());
+            if (user != null) {
+                return user;
+            }
+        }
+        if (entryId != null) {
+            return journalEntryRepository.findById(entryId)
+                    .map(JournalEntry::getUser)
+                    .orElse(null);
+        }
+        return null;
+    }
+
+    private String buildHistorySummary(List<JournalEntry> entries, Long currentEntryId) {
+        if (entries == null || entries.isEmpty()) {
+            return "";
+        }
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        StringBuilder sb = new StringBuilder();
+        int count = 0;
+        for (JournalEntry entry : entries) {
+            if (currentEntryId != null && entry.getId().equals(currentEntryId)) {
+                continue;
+            }
+            if (count >= 4) {
+                break;
+            }
+            sb.append(fmt.format(entry.getTimestamp()));
+            sb.append(" — ");
+            if (entry.getTitle() != null && !entry.getTitle().isBlank()) {
+                sb.append(entry.getTitle()).append(": ");
+            }
+            sb.append(truncate(entry.getContent(), 160));
+            sb.append('\n');
+            count++;
+        }
+        return sb.toString().trim();
+    }
+
+    private String truncate(String text, int limit) {
+        if (text == null) {
+            return "";
+        }
+        String cleaned = text.strip();
+        if (cleaned.length() <= limit) {
+            return cleaned;
+        }
+        return cleaned.substring(0, limit).trim() + "…";
     }
 }
