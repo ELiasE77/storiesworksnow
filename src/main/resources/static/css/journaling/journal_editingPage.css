@@ -80,6 +80,24 @@ label {
     margin-bottom: 20px; /* Spacing below the textarea */
 }
 
+.upload-section {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    background-color: #f8fafc;
+}
+
+.upload-section input[type="file"] {
+    margin-top: 10px;
+}
+
+.upload-help {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #555;
+}
+
 .button-group {
     display: flex;
     justify-content: space-between; /* Space buttons evenly */
@@ -172,6 +190,49 @@ h2 {
 
 .delete-button:hover {
     background-color: #c82333; /* Darker red on hover */
+}
+
+#reflection-history {
+    margin-top: 15px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.reflection-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.reflection-msg__bubble {
+    padding: 10px 12px;
+    border-radius: 8px;
+    line-height: 1.5;
+    background-color: #eef2ff;
+    color: #1f2937;
+}
+
+.reflection-msg.assistant .reflection-msg__bubble {
+    background-color: #f1f5f9;
+}
+
+.reflection-msg__actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.reflection-msg__edit {
+    background: transparent;
+    color: #2563eb;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.reflection-msg__edit:hover {
+    text-decoration: underline;
 }
 
 

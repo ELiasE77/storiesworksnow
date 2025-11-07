@@ -18,27 +18,34 @@
          th:src="'data:image/png;base64,' + ${entry.imageUrl}"
          alt="Current Journal Entry Image"
          style="max-width: 100%;" />
-    <button type="button" id="remove-image">Remove Image</button>
+      <button type="button" id="remove-image">Remove Image</button>
   </div>
 
-  <div class="form-section">
-    <form th:action="@{/journal/update(id=${entry.id})}" method="post">
+    <div class="form-section">
+        <form th:action="@{/journal/update(id=${entry.id})}" method="post">
 
-      <!-- Title -->
-      <textarea name="title"
-                id="titleText"
-                th:text="${entry.title}"></textarea>
+            <!-- Title -->
+            <textarea name="title"
+                      id="titleText"
+                      th:text="${entry.title}"></textarea>
 
-      <!-- Content -->
-      <textarea name="content"
-                id="journal-content"
-                th:text="${entry.content}"></textarea>
+            <!-- Content -->
+            <textarea name="content"
+                      id="journal-content"
+                      th:text="${entry.content}"></textarea>
 
-      <!-- Hidden field for raw base64 image -->
-      <input type="hidden"
-             name="imageUrl"
-             id="imageUrl"
-             th:value="${entry.imageUrl}" />
+            <!-- Hidden field for raw base64 image -->
+            <input type="hidden"
+                   name="imageUrl"
+                   id="imageUrl"
+                   th:value="${entry.imageUrl}" />
+
+            <!-- Manual image upload -->
+            <div class="upload-section">
+                <label for="image-upload">Upload a new image</label>
+                <input type="file" id="image-upload" accept="image/*">
+                <p class="upload-help">Choose a picture to replace the current artwork or pair with your edits.</p>
+            </div>
 
       <!-- Visibility -->
       <label for="visibility">Visibility:</label>
@@ -173,6 +180,19 @@
         document.getElementById("imageUrl").value = ""; // clear hidden input
         const img = document.getElementById("current-image");
         if (img) img.style.display = "none";
+          const generated = document.getElementById("generated-image");
+          const generatedContainer = document.getElementById("generated-image-container");
+          const fileInput = document.getElementById("image-upload");
+          if (generated) {
+              generated.src = "";
+              generated.style.display = "none";
+          }
+          if (generatedContainer) {
+              generatedContainer.style.display = "none";
+          }
+          if (fileInput) {
+              fileInput.value = "";
+          }
         removeBtn.style.display = "none";
       });
     }

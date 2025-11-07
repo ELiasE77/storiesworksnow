@@ -7,15 +7,13 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Base64;
+
 import java.util.Map;
 
 /**
  * Handles AI-powered features:
  * - Journal feedback from fine-tuned GPT model
- * - Image generation with DALL·E 3
+ * - Image generation with GPT-Image-1
  */
 @RestController
 @RequestMapping("/api")
@@ -139,16 +137,17 @@ public class ChatGPTController {
                     + "Focus on location and objects only, no people:\n\n" + journalText;
         }
 
-        String url = "https://api.openai.com/v1/images/generations";
+        String url = "https://api.openai.com/v1/images";
         RestTemplate restTemplate = new RestTemplate();
 
         // Request body for DALL·E
         JSONObject body = new JSONObject();
-        body.put("model", "dall-e-3");
+        body.put("model", "gpt-image-1");
         body.put("prompt", prompt);
         body.put("n", 1);
         body.put("size", "1024x1024");
         body.put("quality", "standard");
+        body.put("response_format", "b64_json");
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
@@ -159,24 +158,19 @@ public class ChatGPTController {
         ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
 
         // Extract image URL
-        String imageUrl;
-        if (response.getStatusCode().is2xxSuccessful()) {
-            JSONObject jsonResponse = new JSONObject(response.getBody());
-            imageUrl = jsonResponse.getJSONArray("data").getJSONObject(0).getString("url");
-        } else {
+        if (!response.getStatusCode().is2xxSuccessful()) {
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         }
 
-        try (InputStream inputStream = new URL(imageUrl).openStream()) {
-            byte[] imageBytes = inputStream.readAllBytes();
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body("{\"base64Image\":\"" + base64Image + "\"}");
-        } catch (Exception e) {
+        JSONObject jsonResponse = new JSONObject(response.getBody());
+        JSONObject data = jsonResponse.getJSONArray("data").getJSONObject(0);
+        String base64Image = data.optString("b64_json", "");
+        if (base64Image.isEmpty()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Failed to fetch and encode image: " + e.getMessage() + "\"}");
+                    .body("{\"error\": \"Image generation returned no data\"}");
         }
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"base64Image\":\"" + base64Image + "\"}");
     }
 }

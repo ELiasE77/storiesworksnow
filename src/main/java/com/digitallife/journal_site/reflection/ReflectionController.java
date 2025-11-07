@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -31,12 +32,43 @@ public class ReflectionController {
     public ResponseEntity<String> converse(@PathVariable Long entryId,
                                            @RequestBody Map<String, String> body) {
         String userMsg = body.getOrDefault("message", "");
+        if (userMsg == null || userMsg.isBlank()) {
+            return ResponseEntity.badRequest().body("{\"error\":\"Message cannot be empty\"}");
+        }
         JournalEntry entry = service.findEntry(entryId);
-        service.saveMessage(entry, ReflectionMessage.Role.USER, userMsg);
+
+        String messageIdRaw = body.get("messageId");
+        if (messageIdRaw != null && !messageIdRaw.isBlank()) {
+            try {
+                Long messageId = Long.valueOf(messageIdRaw);
+                service.updateUserMessage(entry, messageId, userMsg);
+            } catch (NumberFormatException ex) {
+                return ResponseEntity.badRequest().body("{\"error\":\"Invalid message id\"}");
+            }
+        } else {
+            service.saveMessage(entry, ReflectionMessage.Role.USER, userMsg);
+        }
 
         JSONArray messages = new JSONArray();
         messages.put(new JSONObject().put("role", "system")
-                .put("content", "You are a journaling assistant helping the user reflect on their entry."));
+                .put("content",
+                        "You are a journaling assistant helping the user reflect on their entry." +
+                                " Offer concise, empathetic suggestions that encourage growth." +
+                                " Blend persona knowledge and past lessons when responding."));
+
+        String personaContext = service.buildPersonaContext(entry);
+        if (!personaContext.isBlank()) {
+            messages.put(new JSONObject().put("role", "system")
+                    .put("content", personaContext));
+        }
+
+        Long userId = entry.getUser() != null ? entry.getUser().getId() : null;
+        String reinforcement = service.buildReinforcementContext(userId, entry.getId(), 12);
+        if (!reinforcement.isBlank()) {
+            messages.put(new JSONObject().put("role", "system")
+                    .put("content", reinforcement));
+        }
+
         messages.put(new JSONObject().put("role", "user")
                 .put("content", "Journal entry:" + entry.getContent()));
 
@@ -72,7 +104,30 @@ public class ReflectionController {
 
         service.saveMessage(entry, ReflectionMessage.Role.ASSISTANT, reply);
 
-        JSONObject out = new JSONObject().put("reply", reply);
+        JSONObject out = new JSONObject()
+                .put("reply", reply)
+                .put("messages", toHistoryArray(service.getMessages(entry)));
         return ResponseEntity.ok(out.toString());
+    }
+
+    @GetMapping("/{entryId}/history")
+    public ResponseEntity<String> history(@PathVariable Long entryId) {
+        JournalEntry entry = service.findEntry(entryId);
+        JSONObject out = new JSONObject()
+                .put("messages", toHistoryArray(service.getMessages(entry)));
+        return ResponseEntity.ok(out.toString());
+    }
+
+    private JSONArray toHistoryArray(List<ReflectionMessage> history) {
+        JSONArray arr = new JSONArray();
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+        for (ReflectionMessage msg : history) {
+            arr.put(new JSONObject()
+                    .put("id", msg.getId())
+                    .put("role", msg.getRole().name())
+                    .put("content", msg.getContent())
+                    .put("timestamp", msg.getTimestamp() != null ? msg.getTimestamp().format(formatter) : ""));
+        }
+        return arr;
     }
 }

@@ -84,10 +84,18 @@
     <p th:text="${profile.personaFeature}">Your persona feature…</p>
   </section>
 
-  <!-- Appearance JSONL -->
-  <section class="appearance-json-section"
-           th:if="${profile != null and !#strings.isEmpty(profile.appearanceJson)}">
-    <h3>Appearance Data (JSONL)</h3>
+    <!-- Persona Test File -->
+    <section class="persona-test-section"
+           th:if="${profile != null and !#strings.isEmpty(profile.appearanceJson)}">    <h3>Persona Test</h3>
+        <p class="persona-test-description">
+            Data extracted from your uploaded portrait. Use it to fine-tune creative prompts.
+        </p>
+        <pre th:text="${profile.appearanceJson}"></pre>
+        <a class="persona-test-download"
+           th:href="@{'/uploads/profile_' + ${profile.id} + '.jsonl'}"
+           download>
+            Download persona test file
+        </a>
     <pre th:text="${profile.appearanceJson}"></pre>
   </section>
 </div>

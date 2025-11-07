@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const generatedImage = document.getElementById('generated-image');
     const generatedImageContainer = document.getElementById('generated-image-container');
     const pictureTypeSelect = document.getElementById('pictureType');
+    const fileInput = document.getElementById('image-upload');
 
     // Handle style selection
     styleOptions.forEach(option => {
@@ -38,6 +39,37 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!generateButton) {
         console.error('Generate Image button not found');
         return;
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', (event) => {
+            const target = event.target;
+            const file = target.files && target.files[0];
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const result = e.target?.result;
+                if (typeof result !== 'string') {
+                    return;
+                }
+                const commaIndex = result.indexOf(',');
+                const base64Image = commaIndex >= 0 ? result.substring(commaIndex + 1) : result;
+
+                const oldImg = document.getElementById('current-image');
+                if (oldImg) {
+                    oldImg.remove();
+                }
+
+                imageUrlInput.value = base64Image;
+                generatedImage.src = `data:image/png;base64,${base64Image}`;
+                generatedImage.style.display = 'block';
+                generatedImageContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
     }
 
     generateButton.addEventListener('click', async function () {
