@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -65,7 +66,7 @@ public class ChatGPTController {
         JSONObject requestBody = new JSONObject();
         requestBody.put("model", FINE_TUNED_MODEL_ID);
         requestBody.put("messages", messages);
-        requestBody.put("max_tokens", 1000);  // bumped up
+        requestBody.put("max_tokens", 10000);  // bumped up
         requestBody.put("temperature", 0.5);
 
         // Headers
@@ -142,7 +143,7 @@ public class ChatGPTController {
 
         // Request body for DALL·E
         JSONObject body = new JSONObject();
-        body.put("model", "gpt-image-1");
+        body.put("model", "dall-e-3");
         body.put("prompt", prompt);
         body.put("n", 1);
         body.put("size", "1024x1024");
