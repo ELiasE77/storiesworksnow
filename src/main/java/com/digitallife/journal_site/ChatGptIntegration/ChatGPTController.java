@@ -137,10 +137,10 @@ public class ChatGPTController {
                     + "Focus on location and objects only, no people:\n\n" + journalText;
         }
 
-        String url = "https://api.openai.com/v1/images";
+        String url = "https://api.openai.com/v1/images/generations";
         RestTemplate restTemplate = new RestTemplate();
 
-        // Request body for DALL·E
+// Request body for image generation (gpt-image-1)
         JSONObject body = new JSONObject();
         body.put("model", "gpt-image-1");
         body.put("prompt", prompt);
