@@ -25,19 +25,19 @@
         </li>
 
         <!-- Loop through entries -->
-        <li th:each="entry : ${entries}" class="journal-entry">
-          <div class="story-item">
-            <!-- Only show if we have an imageUrl -->
-            <div th:if="${entry.imageUrl}">
-              <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
-                   class="journal-image"
-                   alt="Journal entry image"/>
+          <li th:each="entry : ${entries}"
+              class="journal-entry"
+              th:attr="data-entry-id=${entry.id}, data-has-image=${entry.hasImage}">          <div class="story-item">
+              <div class="journal-media"
+                   th:if="${entry.hasImage}"
+                   th:attr="data-entry-id=${entry.id}">
+                  <div class="image-placeholder">Loading image…</div>
             </div>
 
-            <div id="story-content">
-              <h3 th:text="${entry.title}"         class="journal-title"></h3>
-              <h4 th:text="${entry.user.username}" class="journal-username"></h4>
-              <p  th:text="${entry.content}"       class="journal-text"></p>
+              <div class="story-content">
+                  <h3 th:text="${entry.title}" class="journal-title"></h3>
+                  <h4 th:text="${entry.username}" class="journal-username"></h4>
+                  <p th:text="${entry.content}" class="journal-text"></p>
               <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
                      class="journal-timestamp"></small>
             </div>
@@ -49,6 +49,6 @@
     </div>
   </section>
 </main>
-
+<script th:src="@{/js/pageSpecific/userJournalImages.js}"></script>
 </body>
 </html>

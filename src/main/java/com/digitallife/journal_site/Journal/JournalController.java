@@ -2,10 +2,12 @@ package com.digitallife.journal_site.Journal;
 
 import com.digitallife.journal_site.ChatGptIntegration.ChatGPTController;
 import com.digitallife.journal_site.communities.CommunityService;
+import com.digitallife.journal_site.exceptions.ResourceNotFoundException;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class JournalController {
@@ -75,7 +78,7 @@ public class JournalController {
     @GetMapping("/journal/home")
     public String showUserJournals(Model model, Principal principal) {
         User user = userService.findByUsername(principal.getName());
-        List<JournalEntry> entries = journalService.getEntriesByUser(user);
+        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
         model.addAttribute("entries", entries);
         return "user/UserJournalEntries";
     }
@@ -168,5 +171,30 @@ public class JournalController {
     public String deleteJournalEntry(@RequestParam("id") Long id) {
         journalService.deleteJournalEntry(id);
         return "redirect:/journal/home";
+    }
+
+    @GetMapping(value = "/api/journal/{id}/image", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> getJournalEntryImage(
+            @PathVariable("id") Long id,
+            Principal principal
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            JournalEntry entry = journalService.findJournalEntryById(id);
+            boolean isOwner = entry.getUser().getUsername().equals(principal.getName());
+            if (!isOwner && entry.getVisibility() == JournalEntry.Visibility.PRIVATE) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
+            return journalService.getImageForEntry(id)
+                    .map(image -> ResponseEntity.ok(Map.of("imageUrl", image)))
+                    .orElseGet(() -> ResponseEntity.ok(Map.of("imageUrl", "")));
+        } catch (ResourceNotFoundException ex) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

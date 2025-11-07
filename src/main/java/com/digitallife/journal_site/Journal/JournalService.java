@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class JournalService {
@@ -90,6 +91,15 @@ public class JournalService {
 
     public List<JournalEntry> getEntriesByUser(User user) {
         return journalEntryRepository.findByUser(user);
+    }
+
+    public List<JournalEntrySummary> getEntrySummariesByUser(User user) {
+        return journalEntryRepository.findSummariesByUserOrderByTimestampDesc(user);
+    }
+
+    public Optional<String> getImageForEntry(Long entryId) {
+        return journalEntryRepository.findImageById(entryId)
+                .filter(image -> image != null && !image.isBlank());
     }
 
     public JournalEntry findJournalEntryById(Long id) throws ResourceNotFoundException {
