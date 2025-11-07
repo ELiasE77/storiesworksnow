@@ -95,8 +95,8 @@
             });
             if (res.ok) {
               const json = await res.json();
-              // redirect into “Your Entries”
-              window.location.href = '/journal/home';
+                const redirect = json.redirectUrl || '/journal/home';
+                window.location.href = redirect;
             } else {
               console.error('Save failed', await res.text());
             }

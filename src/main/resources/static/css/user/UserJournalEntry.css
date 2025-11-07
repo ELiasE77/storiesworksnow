@@ -139,3 +139,74 @@ main {
 .story-item a:hover {
     background-color: #0056b3; /* Darker blue on hover */
 }
+
+.no-entries-message,
+.error-message {
+    text-align: center;
+    padding: 30px 15px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-size: 1rem;
+    color: #555;
+}
+
+.no-js-warning {
+    text-align: center;
+    margin: 20px auto;
+    max-width: 1200px;
+    font-size: 1rem;
+    color: #555;
+}
+
+.skeleton .story-item {
+    pointer-events: none;
+}
+
+.skeleton .story-item a {
+    display: none;
+}
+
+.skeleton-block {
+    width: 250px;
+    min-height: 180px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-line {
+    height: 16px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+.skeleton-title {
+    width: 70%;
+    height: 22px;
+}
+
+.skeleton-subtitle {
+    width: 40%;
+}
+
+.skeleton-timestamp {
+    width: 50%;
+    margin-top: 15px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+    100% {
+        background-position: 200px 0;
+    }
+}

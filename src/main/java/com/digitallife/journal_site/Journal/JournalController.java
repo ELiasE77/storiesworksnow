@@ -68,8 +68,9 @@ public class JournalController {
                 dto.getVisibility()
         );
 
-        JSONObject resp = new JSONObject().put("status", "ok");
-        return ResponseEntity.ok()
+        JSONObject resp = new JSONObject()
+                .put("status", "ok")
+                .put("redirectUrl", "/journal/home");        return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(resp.toString());
     }
@@ -196,5 +197,21 @@ public class JournalController {
         } catch (ResourceNotFoundException ex) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping(value = "/api/journal/entries", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<List<JournalEntrySummary>> getCurrentUserEntries(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.findByUsername(principal.getName());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
+        return ResponseEntity.ok(entries);
     }
 }
