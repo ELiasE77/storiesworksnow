@@ -101,5 +101,30 @@
 </div>
 
 <script th:src="@{/js/component/following.js}"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const isOwnProfile = /*[[${user != null and currentUsername != null and user.username == currentUsername}]]*/ false;
+
+    if (isOwnProfile) {
+        const prefetchJournalViews = () => {
+            const urls = ['/journal', '/journal/home'];
+            urls.forEach(url => {
+                fetch(url, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {'X-Background-Prefetch': '1'}
+                }).catch(() => {});
+            });
+        };
+
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(prefetchJournalViews, {timeout: 3000});
+        } else {
+            setTimeout(prefetchJournalViews, 1500);
+        }
+    }
+    /*]]>*/
+</script>
 </body>
 </html>
