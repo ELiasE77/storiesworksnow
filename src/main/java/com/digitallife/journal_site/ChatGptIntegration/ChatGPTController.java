@@ -22,7 +22,7 @@ import java.util.Map;
 public class ChatGPTController {
 
     // Load API key from environment (set in /etc/environment or systemd service)
-    private final String OPENAI_API_KEY = System.getenv("OPENAI_KEY");
+    private final String OPENAI_API_KEY = System.getenv("OPENAI_API_KEY");
 
     private static final String FINE_TUNED_MODEL_ID =
             "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
