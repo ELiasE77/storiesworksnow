@@ -141,11 +141,25 @@ public class JournalController {
             @RequestParam("visibility") JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) String communityIdStr
     ) {
-        // Strip data URL prefix if present
-        if (imageUrl != null && imageUrl.startsWith("data:image")) {
-            int comma = imageUrl.indexOf(',');
-            if (comma > 0) {
-                imageUrl = imageUrl.substring(comma + 1);
+        // Normalize the incoming image data.
+        if (imageUrl != null) {
+            imageUrl = imageUrl.trim();
+
+            // Strip data URL prefix if present (e.g. from copy/paste).
+            if (imageUrl.startsWith("data:image")) {
+                int comma = imageUrl.indexOf(',');
+                if (comma > 0) {
+                    imageUrl = imageUrl.substring(comma + 1);
+                }
+            }
+
+            if (!imageUrl.isEmpty()) {
+                // HTML form posts translate '+' into spaces; convert them back so the
+                // Base64 string is still valid when we persist it.
+                imageUrl = imageUrl.replace(' ', '+');
+            } else {
+                // Treat an empty string the same as removing the image altogether.
+                imageUrl = null;
             }
         }
 
