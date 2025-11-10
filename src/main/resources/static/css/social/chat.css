@@ -58,6 +58,10 @@
     overflow-y: auto;
     margin-bottom: 1rem;
 }
+.chat-history .empty-state {
+    text-align: center;
+    color: #6b7280;
+}
 
 .chat-message-row {
     margin-bottom: 1rem;

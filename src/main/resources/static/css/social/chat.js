@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const contacts = document.querySelectorAll('.contact-button');
+    const contacts = Array.from(document.querySelectorAll('.contact-button'));
     const chatHistory = document.getElementById('chat-history');
     const chatHeader = document.getElementById('chat-header');
     const chatForm = document.getElementById('chat-form');
@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeRecipient = null;
     let imageBase64 = '';
 
+    if (contacts.length === 0) {
+        chatHistory.innerHTML = '<p class="empty-state">Follow each other to start a conversation.</p>';
+    }
+
     contacts.forEach(button => {
         button.addEventListener('click', async () => {
             contacts.forEach(btn => btn.classList.remove('active'));
@@ -21,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
             await loadHistory(activeRecipient);
         });
     });
+
+    if (contacts.length > 0) {
+        contacts[0].click();
+    }
 
     async function loadHistory(username) {
         chatHistory.innerHTML = '<p class="loading">Loading messages…</p>';
