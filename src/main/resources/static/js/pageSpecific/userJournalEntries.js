@@ -1,5 +1,7 @@
 (() => {
     const listSelector = '#journal-entry-list';
+    const filterSelector = '#month-year-filter';
+    const headingSelector = '#h2';
 
     const clearList = (list) => {
         while (list.firstChild) {
@@ -125,12 +127,63 @@
         }
     };
 
-    const fetchEntries = async () => {
-        const response = await fetch('/api/journal/entries');
+    const renderLoading = (list) => {
+        clearList(list);
+        const li = document.createElement('li');
+        li.className = 'journal-entry skeleton';
+
+        const storyItem = document.createElement('div');
+        storyItem.className = 'story-item';
+
+        const media = document.createElement('div');
+        media.className = 'journal-media';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-placeholder skeleton-block';
+        media.appendChild(placeholder);
+        storyItem.appendChild(media);
+
+        const content = document.createElement('div');
+        content.className = 'story-content';
+        ['skeleton-title', 'skeleton-subtitle', '', 'short', 'skeleton-timestamp'].forEach((klass, index) => {
+            const line = document.createElement('div');
+            line.className = 'skeleton-line' + (klass ? ' ' + klass : '');
+            if (index === 3) {
+                line.classList.add('short');
+            }
+            content.appendChild(line);
+        });
+        storyItem.appendChild(content);
+
+        li.appendChild(storyItem);
+        list.appendChild(li);
+    };
+
+    const fetchEntries = async (month, year) => {
+        const params = new URLSearchParams();
+        if (month) params.set('month', month);
+        if (year) params.set('year', year);
+
+        const query = params.toString();
+        const response = await fetch(query ? `/api/journal/entries?${query}` : '/api/journal/entries');
         if (!response.ok) {
             throw new Error('Failed to fetch entries');
         }
         return response.json();
+    };
+
+    const getSelectedMonthYear = () => {
+        const select = document.querySelector(filterSelector);
+        if (!select) return {};
+        const selectedOption = select.options[select.selectedIndex];
+        const month = selectedOption?.dataset.month;
+        const year = selectedOption?.dataset.year;
+        return { month, year, label: selectedOption?.textContent || '' };
+    };
+
+    const updateHeading = (label) => {
+        const heading = document.querySelector(headingSelector);
+        if (!heading) return;
+        heading.textContent = label ? `Entries for ${label}` : 'Recent Journal Entries';
     };
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -139,12 +192,32 @@
             return;
         }
 
+        const { month, year, label } = getSelectedMonthYear();
+        updateHeading(label);
+
         try {
-            const entries = await fetchEntries();
+            renderLoading(list);
+            const entries = await fetchEntries(month, year);
             renderEntries(list, entries);
         } catch (error) {
             renderError(list);
             console.error('Could not load journal entries', error);
+        }
+
+        const filter = document.querySelector(filterSelector);
+        if (filter) {
+            filter.addEventListener('change', async () => {
+                const { month: m, year: y, label: currentLabel } = getSelectedMonthYear();
+                updateHeading(currentLabel);
+                try {
+                    renderLoading(list);
+                    const entries = await fetchEntries(m, y);
+                    renderEntries(list, entries);
+                } catch (error) {
+                    renderError(list);
+                    console.error('Could not load journal entries', error);
+                }
+            });
         }
     });
 })();

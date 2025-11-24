@@ -52,6 +52,29 @@ main {
     margin-bottom: 20px;
 }
 
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-bar label {
+    font-weight: bold;
+}
+
+.filter-bar select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    min-width: 190px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+
 /* The container for each story entry */
 .story-item {
     display: flex;

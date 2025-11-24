@@ -16,8 +16,20 @@
 
 <main>
     <section class="story-gallery">
-        <h2 id="h2">Recent Journal Entries</h2>
+        <div class="filter-bar">
+            <label for="month-year-filter">View entries for</label>
+            <select id="month-year-filter" aria-label="Choose month and year">
+                <option th:each="option : ${monthYearOptions}"
+                        th:value="${option.month + '-' + option.year}"
+                        th:data-month="${option.month}"
+                        th:data-year="${option.year}"
+                        th:selected="${option.month == selectedMonth and option.year == selectedYear}"
+                        th:text="${option.label}">
+                </option>
+            </select>
+        </div>
 
+        <h2 id="h2" th:text="${'Entries for ' + selectedMonth + '/' + selectedYear}">Recent Journal Entries</h2>
         <div class="entry-list">
             <ul id="journal-entry-list" aria-live="polite">
 

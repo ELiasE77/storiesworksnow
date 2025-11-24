@@ -10,8 +10,12 @@ import com.digitallife.journal_site.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -97,6 +101,18 @@ public class JournalService {
         return journalEntryRepository.findSummariesByUserOrderByTimestampDesc(user);
     }
 
+    public List<JournalEntrySummary> getEntrySummariesByUserAndMonth(
+            User user,
+            Integer month,
+            Integer year
+    ) {
+        LocalDate now = LocalDate.now();
+        int targetMonth = (month == null || month < 1 || month > 12) ? now.getMonthValue() : month;
+        int targetYear  = (year  == null || year  < 1) ? now.getYear() : year;
+
+        return journalEntryRepository.findSummariesByUserAndMonthAndYear(user, targetMonth, targetYear);
+    }
+
     public Optional<String> getImageForEntry(Long entryId) {
         return journalEntryRepository.findImageById(entryId)
                 .filter(image -> image != null && !image.isBlank());
@@ -113,6 +129,26 @@ public class JournalService {
 
     public List<Object[]> findMonthAndYear(User user) {
         return journalEntryRepository.findDistinctMonthsAndYearsWithImages(user);
+    }
+
+    public List<MonthYearOption> findDistinctMonthsAndYears(User user) {
+        List<Object[]> raw = journalEntryRepository.findDistinctMonthsAndYearsByUser(user);
+        if (raw.isEmpty()) {
+            LocalDate now = LocalDate.now();
+            String label = Month.of(now.getMonthValue())
+                    .getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + now.getYear();
+            return List.of(new MonthYearOption(now.getMonthValue(), now.getYear(), label));
+        }
+
+        return raw.stream()
+                .map(arr -> {
+                    int month = ((Number) arr[0]).intValue();
+                    int year  = ((Number) arr[1]).intValue();
+                    String label = Month.of(month)
+                            .getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + year;
+                    return new MonthYearOption(month, year, label);
+                })
+                .toList();
     }
 
     public List<JournalEntry> findEntriesForMonthAndYear(User user, Integer month, Integer year) {

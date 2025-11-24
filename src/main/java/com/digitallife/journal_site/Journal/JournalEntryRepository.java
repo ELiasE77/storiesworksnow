@@ -29,6 +29,27 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
     List<JournalEntrySummary> findSummariesByUserOrderByTimestampDesc(@Param("user") User user);
 
     @Query("""
+      SELECT new com.digitallife.journal_site.Journal.JournalEntrySummary(
+             e.id,
+             e.title,
+             e.content,
+             e.timestamp,
+             e.user.username,
+             e.visibility,
+             CASE WHEN e.imageUrl IS NOT NULL THEN true ELSE false END)
+        FROM JournalEntry e
+       WHERE e.user = :user
+         AND FUNCTION('MONTH', e.timestamp) = :month
+         AND FUNCTION('YEAR',  e.timestamp) = :year
+    ORDER BY e.timestamp DESC
+    """)
+    List<JournalEntrySummary> findSummariesByUserAndMonthAndYear(
+            @Param("user") User user,
+            @Param("month") int month,
+            @Param("year") int year
+    );
+
+    @Query("""
       SELECT e.imageUrl
         FROM JournalEntry e
        WHERE e.id = :id
@@ -63,6 +84,15 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
              FUNCTION('MONTH', e.timestamp) DESC
     """)
     List<Object[]> findDistinctMonthsAndYearsWithImages(@Param("user") User user);
+
+    @Query("""
+      SELECT DISTINCT FUNCTION('MONTH', e.timestamp), FUNCTION('YEAR', e.timestamp)
+        FROM JournalEntry e
+       WHERE e.user = :user
+    ORDER BY FUNCTION('YEAR',  e.timestamp) DESC,
+             FUNCTION('MONTH', e.timestamp) DESC
+    """)
+    List<Object[]> findDistinctMonthsAndYearsByUser(@Param("user") User user);
 
     List<JournalEntry> findByVisibilityOrderByTimestampDesc(JournalEntry.Visibility visibility);
 }

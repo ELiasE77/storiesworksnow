@@ -16,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -75,12 +76,24 @@ public class JournalController {
                 .body(resp.toString());
     }
 
-    // 3) List “your entries”
+    // 3) List “your entries” (filtered by month/year for faster load)
     @GetMapping("/journal/home")
-    public String showUserJournals(Model model, Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
+    public String showUserJournals(
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "year", required = false) Integer year,
+            Model model,
+            Principal principal
+    ) {        User user = userService.findByUsername(principal.getName());
+        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUserAndMonth(user, month, year);
+
+        LocalDate now = LocalDate.now();
+        int selectedMonth = (month == null || month < 1 || month > 12) ? now.getMonthValue() : month;
+        int selectedYear  = (year  == null || year  < 1) ? now.getYear()       : year;
+
         model.addAttribute("entries", entries);
+        model.addAttribute("selectedMonth", selectedMonth);
+        model.addAttribute("selectedYear", selectedYear);
+        model.addAttribute("monthYearOptions", journalService.findDistinctMonthsAndYears(user));
         return "user/UserJournalEntries";
     }
 
@@ -201,7 +214,11 @@ public class JournalController {
 
     @GetMapping(value = "/api/journal/entries", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<List<JournalEntrySummary>> getCurrentUserEntries(Principal principal) {
+    public ResponseEntity<List<JournalEntrySummary>> getCurrentUserEntries(
+            @RequestParam(value = "month", required = false) Integer month,
+            @RequestParam(value = "year", required = false) Integer year,
+            Principal principal
+    ) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -211,7 +228,7 @@ public class JournalController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
+        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUserAndMonth(user, month, year);
         return ResponseEntity.ok(entries);
     }
 }
