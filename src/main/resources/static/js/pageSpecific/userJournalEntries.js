@@ -177,8 +177,27 @@
         const selectedOption = select.options[select.selectedIndex];
         const month = selectedOption?.dataset.month;
         const year = selectedOption?.dataset.year;
-        return { month, year, label: selectedOption?.textContent || '' };
+        return {
+            month: month ? parseInt(month, 10) : undefined,
+            year: year ? parseInt(year, 10) : undefined,
+            label: selectedOption?.textContent || ''
+        };
     };
+
+    const updateUrl = (month, year) => {
+        const params = new URLSearchParams(window.location.search);
+        if (month) {
+            params.set('month', month);
+        } else {
+            params.delete('month');
+        }
+        if (year) {
+            params.set('year', year);
+        } else {
+            params.delete('year');
+        }
+        const newUrl = `${window.location.pathname}?${params.toString()}`.replace(/\?$/, '');
+        window.history.replaceState({}, '', newUrl);    };
 
     const updateHeading = (label) => {
         const heading = document.querySelector(headingSelector);
@@ -213,6 +232,7 @@
                     renderLoading(list);
                     const entries = await fetchEntries(m, y);
                     renderEntries(list, entries);
+                    updateUrl(m, y);
                 } catch (error) {
                     renderError(list);
                     console.error('Could not load journal entries', error);

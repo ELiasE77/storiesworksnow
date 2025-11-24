@@ -196,3 +196,19 @@ h2 {
 .modal-actions .secondary:hover {
     background-color: #545b62;
 }
+
+.status-message {
+    margin-top: 10px;
+    color: #155724;
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.status-message.error {
+    color: #721c24;
+    background: #f8d7da;
+    border-color: #f5c6cb;
+}

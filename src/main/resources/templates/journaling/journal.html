@@ -46,7 +46,8 @@
         <button type="button" id="generate-image">Generate Image</button>
         <button type="submit">Submit</button>
       </div>
-      <div id="speechIndicator">🎤 Listening...</div>
+        <p id="upload-status" aria-live="polite" class="status-message" hidden></p>
+        <div id="speechIndicator">🎤 Listening...</div>
 
       <h2>Select Image Style</h2>
       <div class="style-selection">
@@ -88,59 +89,93 @@
 
 <!-- JSON‐submit handler -->
 <script>
-  document.getElementById('journal-form')
-          .addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const payload = {
-              title:       document.getElementById('titleText').value,
-              content:     document.getElementById('journal-content').value,
-              visibility:  document.getElementById('visibility').value,
-              communityId: document.getElementById('community').value || null,
-              imageUrl:    document.getElementById('imageUrl').value
-            };
-            const res = await fetch('/api/journal/save', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              await res.json();
-              showSuccessModal();
-            } else {
-              console.error('Save failed', await res.text());
-            }
-          });
+    const modal = document.getElementById('upload-success-modal');
+    const viewJournalBtn = document.getElementById('view-journal-btn');
+    const newEntryBtn = document.getElementById('new-entry-btn');
+    const form = document.getElementById('journal-form');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const statusMessage = document.getElementById('upload-status');
 
-  const modal = document.getElementById('upload-success-modal');
-  const viewJournalBtn = document.getElementById('view-journal-btn');
-  const newEntryBtn = document.getElementById('new-entry-btn');
-  const form = document.getElementById('journal-form');
+    const updateStatus = (text, isError = false) => {
+      if (!statusMessage) return;
+      statusMessage.hidden = !text;
+      statusMessage.textContent = text;
+      statusMessage.classList.toggle('error', isError);
+    };
 
-  function resetJournalForm() {
-    form.reset();
-    document.getElementById('generated-image').style.display = 'none';
-    document.getElementById('generated-image').src = '';
-    document.getElementById('imageUrl').value = '';
-    document.getElementById('community-selector').style.display = 'none';
-    document.getElementById('selected-style').value = 'minimalist';
-  }
+    const resetJournalForm = () => {
+      form.reset();
+      document.getElementById('generated-image').style.display = 'none';
+      document.getElementById('generated-image').src = '';
+      document.getElementById('imageUrl').value = '';
+      document.getElementById('community-selector').style.display = 'none';
+      document.getElementById('selected-style').value = 'minimalist';
+      updateStatus('');
+    };
 
-  function showSuccessModal() {
-    modal.style.display = 'flex';
-  }
+    const showSuccessModal = () => {
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+    };
 
-  function hideSuccessModal() {
-    modal.style.display = 'none';
-  }
+    const hideSuccessModal = () => {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    };
 
-  viewJournalBtn.addEventListener('click', () => {
-    window.location.href = '/journal/home';
-  });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  newEntryBtn.addEventListener('click', () => {
-    resetJournalForm();
-    hideSuccessModal();
-  });
+      const payload = {
+        title:       document.getElementById('titleText').value,
+        content:     document.getElementById('journal-content').value,
+        visibility:  document.getElementById('visibility').value,
+        communityId: document.getElementById('visibility').value === 'COMMUNITY'
+                ? (document.getElementById('community').value || null)
+                : null,
+        imageUrl:    document.getElementById('imageUrl').value
+      };
+
+      submitButton.disabled = true;
+      updateStatus('Uploading your entry…');
+
+      try {
+        const res = await fetch('/api/journal/save', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(errorText || 'Save failed');
+        }
+
+        await res.json();
+        updateStatus('Entry saved successfully!');
+        showSuccessModal();
+      } catch (error) {
+        console.error('Save failed', error);
+        updateStatus('We could not save your entry. Please try again.', true);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        hideSuccessModal();
+      }
+    });
+
+    viewJournalBtn.addEventListener('click', () => {
+      window.location.href = '/journal/home';
+    });
+
+    newEntryBtn.addEventListener('click', () => {
+      resetJournalForm();
+      hideSuccessModal();
+    });
 </script>
 </body>
 </html>
