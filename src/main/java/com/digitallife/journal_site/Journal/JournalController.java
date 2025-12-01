@@ -29,6 +29,7 @@ public class JournalController {
     @Autowired private CommunityService   communityService;
     @Autowired private ChatGPTController  chatGptController;
     @Autowired private com.digitallife.journal_site.profile.ProfileRepository profileRepository;
+    @Autowired private ImageDescriptionService imageDescriptionService;
 
     // 1) Show the “new entry” form
     @GetMapping("/journal")
@@ -65,6 +66,7 @@ public class JournalController {
                 dto.getTitle(),
                 dto.getContent(),
                 dto.getImageUrl(),   // raw base64 only
+                dto.getSceneDescription(),
                 dto.getCommunityId(),
                 dto.getVisibility()
         );
@@ -153,6 +155,7 @@ public class JournalController {
             @RequestParam(value="title", required = false) String title,
             @RequestParam("content") String content,
             @RequestParam(value="imageUrl", required=false) String imageUrl,
+            @RequestParam(value="sceneDescription", required=false) String sceneDescription,
             @RequestParam("visibility") JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) String communityIdStr
     ) {
@@ -163,6 +166,10 @@ public class JournalController {
                 imageUrl = imageUrl.substring(comma + 1);
             }
         }
+        if (imageUrl == null || imageUrl.isBlank()) {
+            sceneDescription = null;
+        }
+
 
         // Parse communityId safely
         Long communityId = null;
@@ -175,9 +182,26 @@ public class JournalController {
         }
 
         journalService.updateJournalEntry(
-                id, title, content, imageUrl, visibility, communityId
+                id, title, content, imageUrl, sceneDescription, visibility, communityId
         );
         return "redirect:/journal/home";
+    }
+
+    @PostMapping(value = "/api/journal/analyze-image", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> analyzeImage(@RequestBody Map<String, String> payload, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String imageBase64 = payload.get("imageBase64");
+        if (imageBase64 == null || imageBase64.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No image provided"));
+        }
+
+        return imageDescriptionService.describeScene(imageBase64)
+                .map(desc -> ResponseEntity.ok(Map.of("sceneDescription", desc)))
+                .orElseGet(() -> ResponseEntity.ok(Map.of("sceneDescription", "")));
     }
 
     // 8) Delete

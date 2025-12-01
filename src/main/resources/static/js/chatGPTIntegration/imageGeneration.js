@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateButton = document.getElementById('generate-image');
     const loadingIndicator = document.getElementById('loading-indicator');
     const imageUrlInput = document.getElementById('imageUrl');
+    const sceneDescriptionInput = document.getElementById('sceneDescription');
+    const uploadStatus = document.getElementById('upload-status');
     const generatedImage = document.getElementById('generated-image');
     const generatedImageContainer = document.getElementById('generated-image-container');
     const pictureTypeSelect = document.getElementById('pictureType');
@@ -33,8 +35,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reset hidden input
                 imageUrlInput.value = "";
             }
+                });
+            }
+
+            async function describeSceneFromImage(base64Image) {
+                if (!sceneDescriptionInput) {
+                    return;
+                }
+
+                try {
+                    if (uploadStatus) {
+                        uploadStatus.hidden = false;
+                        uploadStatus.textContent = 'Analyzing your photo to capture the scenery…';
+                        uploadStatus.classList.remove('error');
+                    }
+
+                    const response = await fetch('/api/journal/analyze-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ imageBase64: base64Image })
         });
+
+        if (!response.ok) {
+            throw new Error('Analysis failed');
+        }
+
+        const data = await response.json();
+        sceneDescriptionInput.value = data.sceneDescription || '';
+
+        if (uploadStatus) {
+            uploadStatus.textContent = data.sceneDescription
+                ? 'Scenery captured — we will reuse this setting in AI images.'
+                : 'Image saved. We could not extract scenery details.';
+        }
+    } catch (error) {
+        if (uploadStatus) {
+            uploadStatus.hidden = false;
+            uploadStatus.textContent = 'We could not read the scenery from this photo.';
+            uploadStatus.classList.add('error');
+        }
+        console.error('Failed to analyze image', error);
     }
+}
 
     if (!generateButton) {
         console.error('Generate Image button not found');
@@ -67,6 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 generatedImage.src = `data:image/png;base64,${base64Image}`;
                 generatedImage.style.display = 'block';
                 generatedImageContainer.style.display = 'block';
+
+                describeSceneFromImage(base64Image);
             };
             reader.readAsDataURL(file);
         });
@@ -77,6 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedStyle = document.getElementById('selected-style').value;
         const pictureType = pictureTypeSelect?.value || "regular";
         const persona = document.getElementById('persona-feature')?.value || "";
+        const sceneDescription = sceneDescriptionInput?.value?.trim() || "";
+
 
         if (!journalText) {
             alert('Please write something in the journal first.');
@@ -93,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         generateButton.disabled = true;
 
         try {
-            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle, pictureType, persona);
+            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle, pictureType, persona, sceneDescription);
 
             // Replace old current-image preview if exists
             const oldImg = document.getElementById('current-image');
@@ -120,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Function to call backend API
-async function generateImageFromJournalEntry(text, style, pictureType, persona) {
+async function generateImageFromJournalEntry(text, style, pictureType, persona, sceneDescription) {
     const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -128,7 +174,8 @@ async function generateImageFromJournalEntry(text, style, pictureType, persona) 
             journalText: text,
             style: style,
             pictureType: pictureType,
-            persona: persona
+            persona: persona,
+            sceneDescription: sceneDescription
         })
     });
 

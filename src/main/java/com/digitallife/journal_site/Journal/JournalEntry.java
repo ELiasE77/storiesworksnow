@@ -32,6 +32,11 @@ public class JournalEntry {
     @Column(name = "image_url", columnDefinition = "MEDIUMTEXT")
     private String imageUrl;
 
+    @Lob
+    @Column(name = "scene_description", columnDefinition = "TEXT")
+    private String sceneDescription;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -60,6 +65,10 @@ public class JournalEntry {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getSceneDescription() { return sceneDescription; }
+    public void setSceneDescription(String sceneDescription) { this.sceneDescription = sceneDescription;
+    }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

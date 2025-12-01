@@ -39,12 +39,16 @@
                    name="imageUrl"
                    id="imageUrl"
                    th:value="${entry.imageUrl}" />
+            <input type="hidden"
+                   name="sceneDescription"
+                   id="sceneDescription"
+                   th:value="${entry.sceneDescription}" />
 
             <!-- Manual image upload -->
             <div class="upload-section">
                 <label for="image-upload">Upload a new image</label>
                 <input type="file" id="image-upload" accept="image/*">
-                <p class="upload-help">Choose a picture to replace the current artwork or pair with your edits.</p>
+                <p class="upload-help">Choose a picture to replace the current artwork or pair with your edits. We will read the scene so new AI art mirrors it.</p>
             </div>
 
       <!-- Visibility -->
@@ -173,15 +177,19 @@
 
 <script>
   // Handle "Remove Image" button
-  document.addEventListener("DOMContentLoaded", () => {
-    const removeBtn = document.getElementById("remove-image");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", () => {
-        document.getElementById("imageUrl").value = ""; // clear hidden input
-        const img = document.getElementById("current-image");
-        if (img) img.style.display = "none";
-          const generated = document.getElementById("generated-image");
-          const generatedContainer = document.getElementById("generated-image-container");
+      document.addEventListener("DOMContentLoaded", () => {
+        const removeBtn = document.getElementById("remove-image");
+        if (removeBtn) {
+          removeBtn.addEventListener("click", () => {
+            document.getElementById("imageUrl").value = ""; // clear hidden input
+            const sceneDescriptionField = document.getElementById("sceneDescription");
+            if (sceneDescriptionField) {
+                sceneDescriptionField.value = "";
+            }
+            const img = document.getElementById("current-image");
+            if (img) img.style.display = "none";
+              const generated = document.getElementById("generated-image");
+              const generatedContainer = document.getElementById("generated-image-container");
           const fileInput = document.getElementById("image-upload");
           if (generated) {
               generated.src = "";

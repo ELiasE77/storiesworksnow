@@ -39,6 +39,13 @@
       </div>
 
       <input type="hidden" name="imageUrl" id="imageUrl" value="">
+      <input type="hidden" name="sceneDescription" id="sceneDescription" value="">
+
+      <div class="upload-section">
+          <label for="image-upload">Upload a reference image</label>
+          <input type="file" id="image-upload" accept="image/*">
+          <p class="upload-help">We will save the picture and extract its scenery so future AI images keep the same setting.</p>
+      </div>
 
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
@@ -133,7 +140,8 @@
         communityId: document.getElementById('visibility').value === 'COMMUNITY'
                 ? (document.getElementById('community').value || null)
                 : null,
-        imageUrl:    document.getElementById('imageUrl').value
+        imageUrl:    document.getElementById('imageUrl').value,
+        sceneDescription: document.getElementById('sceneDescription').value
       };
 
       submitButton.disabled = true;

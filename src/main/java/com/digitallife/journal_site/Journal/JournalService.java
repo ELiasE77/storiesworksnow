@@ -33,11 +33,15 @@ public class JournalService {
     @Autowired
     private PersonaService personaService;
 
+    @Autowired
+    private ImageDescriptionService imageDescriptionService;
+
     public void saveJournalEntry(
             User user,
             String title,
             String content,
             String imageUrl,
+            String sceneDescription,
             Long communityId,
             JournalEntry.Visibility visibility
     ) {
@@ -50,6 +54,12 @@ public class JournalService {
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
             entry.setImageUrl(imageUrl);
+            if (sceneDescription != null && !sceneDescription.isBlank()) {
+                entry.setSceneDescription(sceneDescription);
+            } else {
+                imageDescriptionService.describeScene(imageUrl)
+                        .ifPresent(entry::setSceneDescription);
+            }
         }
         if (visibility == JournalEntry.Visibility.COMMUNITY && communityId != null) {
             Community c = communityRepository.findById(communityId)
@@ -75,6 +85,7 @@ public class JournalService {
             String title,
             String content,
             String imageUrl,
+            String sceneDescription,
             JournalEntry.Visibility visibility,
             Long communityId
     ) {
@@ -84,6 +95,16 @@ public class JournalService {
         entry.setContent(content);
         entry.setVisibility(visibility);
         entry.setImageUrl(imageUrl);
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            if (sceneDescription != null && !sceneDescription.isBlank()) {
+                entry.setSceneDescription(sceneDescription);
+            } else {
+                imageDescriptionService.describeScene(imageUrl)
+                        .ifPresent(entry::setSceneDescription);
+            }
+        } else {
+            entry.setSceneDescription(null);
+        }
 
         if (visibility == JournalEntry.Visibility.COMMUNITY && communityId != null) {
             Community c = communityRepository.findById(communityId)

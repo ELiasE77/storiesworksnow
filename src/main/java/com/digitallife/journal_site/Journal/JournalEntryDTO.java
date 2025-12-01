@@ -4,6 +4,7 @@ public class JournalEntryDTO {
     private String title;
     private String content;
     private String imageUrl;
+    private String sceneDescription;
     private Long communityId;
     private JournalEntry.Visibility visibility;
 
@@ -24,6 +25,12 @@ public class JournalEntryDTO {
     }
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+    public String getSceneDescription() {
+        return sceneDescription;
+    }
+    public void setSceneDescription(String sceneDescription) {
+        this.sceneDescription = sceneDescription;
     }
     public Long getCommunityId() {
         return communityId;

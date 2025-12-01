@@ -122,6 +122,7 @@ public class ChatGPTController {
         String style = request.getOrDefault("style", "regular");
         String pictureType = request.getOrDefault("pictureType", "regular");
         String persona = request.getOrDefault("persona", "");
+        String sceneDescription = request.getOrDefault("sceneDescription", "");
 
         if ("none".equalsIgnoreCase(pictureType)) {
             return ResponseEntity.ok()
@@ -132,11 +133,20 @@ public class ChatGPTController {
         String prompt;
         if ("personalized".equalsIgnoreCase(pictureType)) {
             prompt = "Create a " + style + " image based on the user's persona (" + persona + ") "
-                    + "and the journal text. Focus on a positive moment:\n\n" + journalText;
+                    + "Focus on location and objects only, no people.";
         } else {
             prompt = "Create a " + style + " image of one positive moment from the following journal. "
                     + "Focus on location and objects only, no people:\n\n" + journalText;
         }
+
+        if (sceneDescription != null && !sceneDescription.isBlank()) {
+            prompt += " Use this description of the user's reference photo as the background context: "
+                    + sceneDescription
+                    + " Maintain the same scenery cues when generating the new image.";
+        }
+
+        prompt += "\n\nJournal text:\n" + journalText;
+
 
         String url = "https://api.openai.com/v1/images/generations";
         RestTemplate restTemplate = new RestTemplate();
