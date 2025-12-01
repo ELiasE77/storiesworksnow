@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Personal Journal Page</title>
+  <link rel="stylesheet" th:href="@{/css/user/UserJournalEntry.css}">
+  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<header>
+  <h1>Personal Journal Page</h1>
+</header>
+
+<main>
+  <section class="story-gallery">
+    <h2 id="h2">Recent Journal Entries</h2>
+    <div class="entry-list">
+      <ul>
+        <!-- No entries message -->
+        <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
+          <p>You have not written any entries yet!</p>
+        </li>
+
+        <!-- Loop through entries -->
+        <li th:each="entry : ${entries}" class="journal-entry">
+          <div class="story-item">
+            <!-- Only show if we have an imageUrl -->
+            <div th:if="${entry.imageUrl}">
+              <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
+                   class="journal-image"
+                   alt="Journal entry image"/>
+            </div>
+
+            <div id="story-content">
+              <h3 th:text="${entry.title}"         class="journal-title"></h3>
+              <h4 th:text="${entry.user.username}" class="journal-username"></h4>
+              <p  th:text="${entry.content}"       class="journal-text"></p>
+              <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
+                     class="journal-timestamp"></small>
+            </div>
+
+            <a th:href="@{'/journal/edit?id=' + ${entry.id}}">Edit</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>
