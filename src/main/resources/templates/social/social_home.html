@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Social Journal Page</title>
+    <link rel="stylesheet" th:href="@{/css/social/social_janneke.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+</head>
+<body>
+
+<div th:replace="~{navbar :: navbar}"></div>
+
+<header>
+    <h1>Social Journal Page</h1>
+</header>
+
+<main>
+    <section class="story-gallery">
+        <h2 id="h2">Recent Journal Entries</h2>
+        <div class="entry-list">
+            <ul>
+                <!-- Loop through each journal entry in the 'entries' attribute -->
+                <li th:each="entry : ${entries}" class="journal-entry" th:attr="data-entry-id=${entry.id}">
+                    <div class="story-item">
+                        <div th:if="${entry.imageUrl}">
+                            <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
+                                 class="journal-image"
+                                 alt="Generated Image"/>
+                        </div>
+
+                        <div id="story-content">
+                            <h3 th:text="${entry.title}" class="journal-title"></h3>
+
+                            <!-- clickable link which leads to the userProfile page -->
+                            <h4>
+                                <a th:href="@{'/profile/' + ${entry.user.username}}"
+                                   th:text="${entry.user.username}"
+                                   class="journal-username"></a>
+                            </h4>
+
+                            <p th:text="${entry.content}" class="journal-text"></p>
+                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
+                                   class="journal-timestamp"></small>
+                            <div class="interaction-bar">
+                                <button type="button"
+                                        class="like-button"
+                                        th:attr="data-entry-id=${entry.id}">
+                                    ❤️ <span class="like-count" th:text="${entry.likes.size()}">0</span>
+                                </button>
+                            </div>
+                            <div class="comments-section">
+                                <h5>Comments</h5>
+                                <ul class="comment-list">
+                                    <li th:each="comment : ${entry.comments}">
+                                        <strong th:text="${comment.author.username}">user</strong>:
+                                        <span th:text="${comment.content}">comment text</span>
+                                        <small class="comment-timestamp"
+                                               th:text="${#temporals.format(comment.timestamp, 'dd MMM yyyy HH:mm')}"></small>
+                                    </li>
+                                </ul>
+                                <form class="comment-form" th:attr="data-entry-id=${entry.id}">
+                                    <textarea name="comment"
+                                              rows="2"
+                                              placeholder="Share your thoughts…"></textarea>
+                                    <button type="submit">Post</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<script th:src="@{/js/social/socialInteractions.js}"></script>
+
+</body>
+</html>

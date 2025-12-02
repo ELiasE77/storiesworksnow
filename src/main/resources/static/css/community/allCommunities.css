@@ -1,0 +1,120 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5; /* Light background color */
+    padding-top: 110px;
+}
+
+.create-community-container {
+    text-align: center; /* Center the link horizontally */
+    margin-bottom: 20px; /* Space below the link */
+}
+
+.create-community-link {
+    display: inline-block; /* Make the link behave like a button */
+    background-color: #007bff; /* Primary button color */
+    color: white; /* Text color */
+    padding: 10px 20px; /* Padding around the text */
+    margin-top: 20px;
+    border-radius: 5px; /* Rounded corners */
+    text-decoration: none; /* Remove underline */
+    font-weight: bold; /* Make text bold */
+    transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+.create-community-link:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
+header {
+    background-color: #298780; /* Header color */
+    color: white;
+    padding-bottom: 15px;
+    text-align: center;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px; /* Max width for the main content */
+    margin: auto; /* Center the main content */
+}
+
+.community-container {
+    background-color: white; /* White background for the community list */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    padding: 20px;
+}
+
+.community-list {
+    margin-top: 20px;
+}
+
+/* Remove bullet points from the unordered list and list items */
+.community-list ul {
+    list-style-type: none; /* Remove bullets */
+    padding: 0; /* Remove default padding */
+}
+
+.community-list li {
+    margin-bottom: 20px; /* Add some spacing between entries */
+}
+
+.community-item {
+    padding: 15px;
+    border: 1px solid #ccc; /* Light border for community items */
+    border-radius: 8px;
+    margin-bottom: 15px; /* Space between community items */
+    background-color: #f9f9f9; /* Slightly grey background */
+    transition: background-color 0.3s; /* Smooth background transition */
+}
+
+.community-item:hover {
+    background-color: #e0f7fa; /* Change color on hover */
+}
+
+.community-details h3 {
+    font-size: 1.5rem; /* Title font size */
+    margin-bottom: 5px; /* Space below title */
+}
+
+.community-details p {
+    font-size: 1rem; /* Members count font size */
+    margin-bottom: 10px; /* Space below members count */
+}
+
+.join-button {
+    background-color: #007bff; /* Button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px; /* Padding for the button */
+    cursor: pointer;
+    transition: background-color 0.3s; /* Smooth background transition */
+}
+
+.join-button:hover {
+    background-color: #0056b3; /* Darker button color on hover */
+}
+
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333; /* Footer color */
+    color: white;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
