@@ -51,7 +51,7 @@ label {
 #visibility,
 #community {
     width: 100%; /* Full width of the select elements */
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     border-radius: 5px;
     padding: 10px; /* Padding inside select elements */
     margin-bottom: 20px; /* Spacing below the select elements */
