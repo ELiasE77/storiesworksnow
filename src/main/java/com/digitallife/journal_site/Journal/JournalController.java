@@ -70,7 +70,8 @@ public class JournalController {
 
         JSONObject resp = new JSONObject()
                 .put("status", "ok")
-                .put("redirectUrl", "/journal/home");        return ResponseEntity.ok()
+                .put("redirectUrl", "/journal/home");
+        return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(resp.toString());
     }

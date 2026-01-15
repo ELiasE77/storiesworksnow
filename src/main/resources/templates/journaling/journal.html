@@ -1,106 +1,244 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Journal Entries</title>
-  <link rel="stylesheet" th:href="@{/css/journaling/journal_original.css}">
-  <link rel="stylesheet" th:href="@{/css/navbar.css}">
-  <style>
-    #speechIndicator { display: none; color: green; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Entries</title>
+
+    <link rel="stylesheet" th:href="@{/css/journaling/journal_original.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+
+    <style>
+        #speechIndicator { display: none; color: green; }
+
+        /* Lightweight toast (no external CSS needed) */
+        #submit-toast {
+          position: fixed;
+          left: 50%;
+          bottom: 24px;
+          transform: translateX(-50%);
+          padding: 14px 16px;
+          border-radius: 12px;
+          background: rgba(20, 20, 20, 0.95);
+          color: white;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          display: none;
+          gap: 12px;
+          align-items: center;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+          z-index: 9999;
+          max-width: min(720px, calc(100vw - 32px));
+        }
+        #submit-toast span {
+          line-height: 1.35;
+        }
+        #cancel-redirect {
+          border: 0;
+          padding: 8px 10px;
+          border-radius: 10px;
+          cursor: pointer;
+          font-weight: 600;
+        }
+        #cancel-redirect:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+    </style>
 </head>
+
 <body>
 <div th:replace="~{navbar :: navbar}"></div>
+
 <section>
-  <div class="journalEntry-container">
-    <h1>Create your Journal entry!</h1>
+    <div class="journalEntry-container">
+        <h1>Create your Journal entry!</h1>
 
-    <!-- NOTE: no action or method here; JS will POST to /api/journal/save -->
-    <form id="journal-form">
-      <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
-      <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
+        <!-- NOTE: no action or method here; JS will POST to /api/journal/save -->
+        <form id="journal-form">
+            <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
+            <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
 
-      <label for="visibility">Visibility:</label>
-      <select name="visibility" id="visibility" required onchange="toggleCommunitySelector()">
-        <option value="PRIVATE">Private</option>
-        <option value="PUBLIC">Public</option>
-        <option value="COMMUNITY">Community</option>
-      </select>
+            <label for="visibility">Visibility:</label>
+            <select name="visibility" id="visibility" required onchange="toggleCommunitySelector()">
+                <option value="PRIVATE">Private</option>
+                <option value="PUBLIC">Public</option>
+                <option value="COMMUNITY">Community</option>
+            </select>
 
-      <div id="community-selector" style="display:none;">
-        <label for="community">Select a community:</label>
-        <select name="communityId" id="community">
-          <option value="" disabled selected>Select a community</option>
-          <option th:each="c : ${communities}"
-                  th:value="${c.id}"
-                  th:text="${c.name}"></option>
-        </select>
-      </div>
+            <div id="community-selector" style="display:none;">
+                <label for="community">Select a community:</label>
+                <select name="communityId" id="community">
+                    <option value="" disabled selected>Select a community</option>
+                    <option th:each="c : ${communities}"
+                            th:value="${c.id}"
+                            th:text="${c.name}"></option>
+                </select>
+            </div>
 
-      <input type="hidden" name="imageUrl" id="imageUrl" value="">
+            <input type="hidden" name="imageUrl" id="imageUrl" value="">
 
-      <div class="button-group">
-        <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
-        <button type="button" id="get-feedback">Get Feedback</button>
-        <button type="button" id="generate-image">Generate Image</button>
-        <button type="submit">Submit</button>
-      </div>
-      <div id="speechIndicator">🎤 Listening...</div>
+            <div class="button-group">
+                <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
+                <button type="button" id="get-feedback">Get Feedback</button>
+                <button type="button" id="generate-image">Generate Image</button>
+                <button type="submit" id="submitBtn">Submit</button>
+            </div>
 
-      <h2>Select Image Style</h2>
-      <div class="style-selection">
-        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist">
-        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor Poster">
-        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch">
-        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor">
-      </div>
-      <input type="hidden" id="selected-style" name="selected-style" value="minimalist">
+            <div id="speechIndicator">🎤 Listening...</div>
 
-      <div id="feedback">
-        <h3>AI Feedback</h3>
-        <p id="feedback-text"></p>
-      </div>
-      <div id="generated-image-container">
-        <img id="generated-image" src="" alt="Generated Image" style="display:none;max-width:100%;" />
-      </div>
-      <div id="loading-indicator" style="display:none;">
-        <p>Generating image, please wait...</p>
-      </div>
-    </form>
-  </div>
+            <h2>Select Image Style</h2>
+            <div class="style-selection">
+                <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist">
+                <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor Poster">
+                <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch">
+                <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor">
+            </div>
+            <input type="hidden" id="selected-style" name="selected-style" value="minimalist">
+
+            <div id="feedback">
+                <h3>AI Feedback</h3>
+                <p id="feedback-text"></p>
+            </div>
+
+            <div id="generated-image-container">
+                <img id="generated-image" src="" alt="Generated Image" style="display:none;max-width:100%;" />
+            </div>
+
+            <div id="loading-indicator" style="display:none;">
+                <p>Generating image, please wait...</p>
+            </div>
+        </form>
+    </div>
 </section>
+
+<!-- Toast UI -->
+<div id="submit-toast">
+    <span id="toast-text">Entry submitted!</span>
+    <button id="cancel-redirect" type="button">Stay here</button>
+</div>
 
 <script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
 <script th:src="@{/js/chatGPTIntegration/textFeedback.js}"></script>
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
 
-<!-- JSON‐submit handler -->
+<!-- JSON‐submit handler (toast + auto-redirect + cancel) -->
 <script>
-  document.getElementById('journal-form')
-          .addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const payload = {
-              title:       document.getElementById('titleText').value,
-              content:     document.getElementById('journal-content').value,
-              visibility:  document.getElementById('visibility').value,
-              communityId: document.getElementById('community').value || null,
-              imageUrl:    document.getElementById('imageUrl').value
-            };
-            const res = await fetch('/api/journal/save', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              const json = await res.json();
-                const redirect = json.redirectUrl || '/journal/home';
-                window.location.href = redirect;
-            } else {
-              console.error('Save failed', await res.text());
-            }
+    (() => {
+      const form = document.getElementById('journal-form');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const toast = document.getElementById('submit-toast');
+      const toastText = document.getElementById('toast-text');
+      const cancelBtn = document.getElementById('cancel-redirect');
+
+      let redirectTimer = null;
+      let countdownTimer = null;
+
+      const showToast = (message) => {
+        toastText.textContent = message;
+        toast.style.display = 'flex';
+      };
+
+      const hideToast = () => {
+        toast.style.display = 'none';
+      };
+
+      const clearTimers = () => {
+        if (redirectTimer) clearTimeout(redirectTimer);
+        if (countdownTimer) clearInterval(countdownTimer);
+        redirectTimer = null;
+        countdownTimer = null;
+      };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // prevent double submits
+        if (submitBtn) submitBtn.disabled = true;
+
+        const payload = {
+          title:       document.getElementById('titleText').value,
+          content:     document.getElementById('journal-content').value,
+          visibility:  document.getElementById('visibility').value,
+          communityId: document.getElementById('community').value || null,
+          imageUrl:    document.getElementById('imageUrl').value
+        };
+
+        try {
+          const res = await fetch('/api/journal/save', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
           });
+
+          if (!res.ok) {
+            console.error('Save failed', await res.text());
+            showToast('Save failed. Please try again.');
+            cancelBtn.textContent = 'Close';
+            cancelBtn.disabled = false;
+
+            cancelBtn.onclick = () => {
+              hideToast();
+              if (submitBtn) submitBtn.disabled = false;
+            };
+
+            // auto-hide after a few seconds
+            setTimeout(() => hideToast(), 5000);
+            return;
+          }
+
+          const json = await res.json();
+          const redirect = json.redirectUrl || '/journal/home';
+
+          // Success toast + countdown
+          clearTimers();
+          cancelBtn.textContent = 'Stay here';
+          cancelBtn.disabled = false;
+
+          let seconds = 3;
+          showToast(`Entry submitted! Redirecting to Journal page in ${seconds} seconds…`);
+
+          countdownTimer = setInterval(() => {
+            seconds -= 1;
+            if (seconds <= 0) {
+              clearInterval(countdownTimer);
+              countdownTimer = null;
+              return;
+            }
+            showToast(`Entry submitted! Redirecting to Journal page in ${seconds} seconds…`);
+          }, 1000);
+
+          // Allow user to cancel redirect and stay on page
+          cancelBtn.onclick = () => {
+            clearTimers();
+            showToast('Saved. Redirect canceled — you can keep editing or leave this page.');
+            cancelBtn.textContent = 'Close';
+            cancelBtn.onclick = () => {
+              hideToast();
+            };
+            if (submitBtn) submitBtn.disabled = false;
+            setTimeout(() => hideToast(), 6000);
+          };
+
+          // Auto-redirect after delay (user can cancel before it fires)
+          redirectTimer = setTimeout(() => {
+            window.location.href = redirect;
+          }, 3000);
+
+        } catch (err) {
+          console.error('Save error', err);
+          showToast('Network error. Please try again.');
+          cancelBtn.textContent = 'Close';
+          cancelBtn.disabled = false;
+          cancelBtn.onclick = () => {
+            hideToast();
+            if (submitBtn) submitBtn.disabled = false;
+          };
+          setTimeout(() => hideToast(), 5000);
+        }
+      });
+    })();
 </script>
 </body>
 </html>
