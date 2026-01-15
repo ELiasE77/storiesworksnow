@@ -1,0 +1,7 @@
+com/digitallife/journal_site/Journal/JournalControllerTest.class
+com/digitallife/journal_site/communities/CommunityControllerTest.class
+com/digitallife/journal_site/Journal/JournalServiceTest.class
+com/digitallife/journal_site/user/UserControllerTest.class
+com/digitallife/journal_site/JournalSiteApplicationTests.class
+com/digitallife/journal_site/user/UserDetailServiceTest.class
+com/digitallife/journal_site/communities/CommunityServiceTest.class
