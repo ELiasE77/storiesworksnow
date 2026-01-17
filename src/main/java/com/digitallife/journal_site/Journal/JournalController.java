@@ -32,6 +32,9 @@ public class JournalController {
     // 1) Show the “new entry” form
     @GetMapping("/journal")
     public String showCreateForm(Model model, Authentication auth) {
+        if (auth == null) {
+            return "redirect:/login";
+        }
         model.addAttribute("communities",
                 communityService.findCommunityByUsername(auth.getName()));
         return "journaling/journal";
@@ -78,12 +81,18 @@ public class JournalController {
 
     // 3) List “your entries”
     @GetMapping("/journal/home")
-    public String showUserJournals(Model model, Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
+    public String showUserJournals(Model model, Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        User user = userService.findByUsername(auth.getName());
+        List<JournalEntrySummary> entries = user == null
+                ? List.of()
+                : journalService.getEntrySummariesByUser(user);
         model.addAttribute("entries", entries);
         return "user/UserJournalEntries";
     }
+
 
     // 4) Public / social feed
     @GetMapping("/journal/sharePage")
