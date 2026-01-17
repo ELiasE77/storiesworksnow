@@ -79,11 +79,17 @@ public class JournalController {
     // 3) List “your entries”
     @GetMapping("/journal/home")
     public String showUserJournals(Model model, Principal principal) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
         User user = userService.findByUsername(principal.getName());
-        List<JournalEntrySummary> entries = journalService.getEntrySummariesByUser(user);
+        List<JournalEntrySummary> entries = user == null
+                ? List.of()
+                : journalService.getEntrySummariesByUser(user);
         model.addAttribute("entries", entries);
         return "user/UserJournalEntries";
     }
+
 
     // 4) Public / social feed
     @GetMapping("/journal/sharePage")
