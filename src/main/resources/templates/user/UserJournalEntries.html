@@ -16,9 +16,29 @@
 
 <main>
     <section class="story-gallery">
-        <h2 id="h2">Recent Journal Entries</h2>
+        <div class="journal-header">
+            <div class="journal-heading">
+                <h2 id="h2">Recent Journal Entries</h2>
+                <p class="journal-subtitle">Jump between days or use the arrows to browse your timeline.</p>
+            </div>
+            <div class="journal-controls" aria-label="Journal navigation">
+                <button class="nav-button" id="journal-prev" type="button" aria-label="Previous day">
+                    &#8592;
+                </button>
+                <div class="journal-select">
+                    <label for="journal-day-select">Select day</label>
+                    <select id="journal-day-select" disabled>
+                        <option value="">Loading days…</option>
+                    </select>
+                </div>
+                <button class="nav-button" id="journal-next" type="button" aria-label="Next day">
+                    &#8594;
+                </button>
+            </div>
+        </div>
 
         <div class="entry-list">
+            <p class="journal-day-label" id="journal-day-label" aria-live="polite"></p>
             <ul id="journal-entry-list" aria-live="polite">
 
                 <!-- Message shown when no entries exist -->
@@ -43,32 +63,32 @@
                 </li>
 
                 <!-- Loop through each real journal entry -->
-                <li th:each="entry : ${entries}"
-                    class="journal-entry"
-                    th:attr="data-entry-id=${entry.id}, data-has-image=${entry.hasImage}">
-                    <div class="story-item">
-
-                        <!-- Journal image (loaded asynchronously by JS) -->
-                        <div class="journal-media" th:if="${entry.hasImage}">
-                            <div class="image-placeholder">Loading image…</div>
-                        </div>
-
-                        <!-- Journal text content -->
-                        <div class="story-content">
-                            <h3 th:text="${entry.title}" class="journal-title"></h3>
-                            <h4 th:text="${entry.username}" class="journal-username"></h4>
-                            <p th:text="${entry.content}" class="journal-text"></p>
-                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
-                                   class="journal-timestamp"></small>
-                        </div>
-
-                        <!-- Edit button -->
-                        <a th:href="@{'/journal/edit?id=' + ${entry.id}}" class="edit-link">Edit</a>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </section>
+                <li th:each="entry : ${entries}"␊
+                    class="journal-entry"␊
+                    th:attr="data-entry-id=${entry.id}, data-has-image=${entry.hasImage}">␊
+                    <div class="story-item">␊
+                        ␊
+                        <!-- Journal image (loaded asynchronously by JS) -->␊
+                        <div class="journal-media" th:if="${entry.hasImage}">␊
+                            <div class="image-placeholder">Loading image…</div>␊
+                        </div>␊
+                        ␊
+                        <!-- Journal text content -->␊
+                        <div class="story-content">␊
+                            <h3 th:text="${entry.title}" class="journal-title"></h3>␊
+                            <h4 th:text="${entry.username}" class="journal-username"></h4>␊
+                            <p th:text="${entry.content}" class="journal-text"></p>␊
+                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"␊
+                                   class="journal-timestamp"></small>␊
+                        </div>␊
+                        ␊
+                        <!-- Edit button -->␊
+                        <a th:href="@{'/journal/edit?id=' + ${entry.id}}" class="edit-link">Edit</a>␊
+                    </div>␊
+                </li>␊
+            </ul>␊
+        </div>␊
+    </section>␊
 </main>
 
 <noscript>
