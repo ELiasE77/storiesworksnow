@@ -62,13 +62,4 @@
         }
     };
 
-    /**
-     * Automatically trigger loading when DOM is ready.
-     */
-    document.addEventListener('DOMContentLoaded', () => {
-        const entryElements = Array.from(
-            document.querySelectorAll('.journal-entry[data-has-image="true"]')
-        );
-        loadSequentially(entryElements);
-    });
 })();

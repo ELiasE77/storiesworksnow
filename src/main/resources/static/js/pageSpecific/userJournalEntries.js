@@ -181,22 +181,22 @@
         }
     };
 
-    const renderDayEntries = (list, dayKey) => {
-        const entries = entriesByDay.get(dayKey) || [];
-        const dayLabel = document.querySelector(dayLabelSelector);
-
-        list.classList.add('is-transitioning');
-        window.setTimeout(() => {
-            renderEntries(list, entries.slice(0, 1));
-            if (dayLabel) {
-                const label = formatDayLabel(dayKey);
-                dayLabel.textContent = entries.length
-                    ? `Latest entry for ${label}`
-                    : label;
-            }
-            list.classList.remove('is-transitioning');
-        }, 150);
-    };
+    const renderDayEntries = (list, dayKey) => {␊
+        const entries = entriesByDay.get(dayKey) || [];␊
+        const dayLabel = document.querySelector(dayLabelSelector);␊
+␊
+        list.classList.add('is-transitioning');␊
+        window.setTimeout(() => {␊
+            renderEntries(list, entries);
+            if (dayLabel) {␊
+                const label = formatDayLabel(dayKey);␊
+                dayLabel.textContent = entries.length␊
+                    ? `Entries for ${label}`
+                    : label;␊
+            }␊
+            list.classList.remove('is-transitioning');␊
+        }, 150);␊
+    };␊
 
     const updateNavigation = (list) => {
         if (!dayKeys.length) {

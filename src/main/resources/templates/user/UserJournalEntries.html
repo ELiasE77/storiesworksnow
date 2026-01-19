@@ -1,103 +1,72 @@
-<!DOCTYPE html>␊␊
-<html xmlns:th="http://www.thymeleaf.org">␊␊
-<head>␊␊
-    <meta charset="UTF-8">␊␊
-    <title>Personal Journal Page</title>␊␊
-    <link rel="stylesheet" th:href="@{/css/user/UserJournalEntry.css}">␊␊
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">␊␊
-</head>␊␊
-<body>␊␊
-␊␊
-<div th:replace="~{navbar :: navbar}"></div>␊␊
-␊␊
-<header>␊␊
-    <h1>Personal Journal Page</h1>␊␊
-</header>␊␊
-␊␊
-<main>␊␊
-    <section class="story-gallery">␊␊
-        <div class="journal-header">␊␊
-            <div class="journal-heading">␊␊
-                <h2 id="h2">Most Recent Journal</h2>␊
-                <p class="journal-subtitle">Use the arrows or pick a day to jump through your journal timeline.</p>␊
-            </div>␊␊
-            <div class="journal-controls" aria-label="Journal navigation">␊␊
-                <button class="nav-button" id="journal-prev" type="button" aria-label="Previous day">␊␊
-                    &#8592;␊␊
-                </button>␊␊
-                <div class="journal-select">␊␊
-                    <label for="journal-day-select">Select day</label>␊␊
-                    <select id="journal-day-select" disabled>␊␊
-                        <option value="">Loading days…</option>␊␊
-                    </select>␊␊
-                </div>␊␊
-                <button class="nav-button" id="journal-next" type="button" aria-label="Next day">␊␊
-                    &#8594;␊␊
-                </button>␊␊
-            </div>␊␊
-        </div>␊␊
-        ␊␊
-        <div class="entry-list">␊␊
-            <p class="journal-day-label" id="journal-day-label" aria-live="polite"></p>␊␊
-            <ul id="journal-entry-list" aria-live="polite">␊␊
-                ␊␊
-                <!-- Message shown when no entries exist -->␊␊
-                <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">␊␊
-                    <p>You have not written any entries yet!</p>␊␊
-                </li>␊␊
-                ␊␊
-                <!-- Skeleton loader (shown while content loads) -->␊␊
-                <li th:if="${!#lists.isEmpty(entries)}" class="journal-entry skeleton" th:unless="${entries}">␊␊
-                    <div class="story-item">␊␊
-                        <div class="journal-media">␊␊
-                            <div class="image-placeholder skeleton-block"></div>␊␊
-                        </div>␊␊
-                        <div class="story-content">␊␊
-                            <div class="skeleton-line skeleton-title"></div>␊␊
-                            <div class="skeleton-line skeleton-subtitle"></div>␊␊
-                            <div class="skeleton-line"></div>␊␊
-                            <div class="skeleton-line short"></div>␊␊
-                            <div class="skeleton-line skeleton-timestamp"></div>␊␊
-                        </div>␊␊
-                    </div>␊␊
-                </li>␊␊
-                ␊␊
-                <!-- Show only the most recent journal entry by default -->␊
-                <li th:if="${!#lists.isEmpty(entries)}" th:with="entry=${entries[0]}"
-                    class="journal-entry"␊
-                    th:attr="data-entry-id=${entry.id}, data-has-image=${entry.hasImage}">␊
-                    <div class="story-item">␊
-                        ␊
-                        <!-- Journal image (loaded asynchronously by JS) -->␊
-                        <div class="journal-media" th:if="${entry.hasImage}">␊
-                            <div class="image-placeholder">Loading image…</div>␊
-                        </div>␊
-                        ␊
-                        <!-- Journal text content -->␊
-                        <div class="story-content">␊
-                            <h3 th:text="${entry.title}" class="journal-title"></h3>␊
-                            <h4 th:text="${entry.username}" class="journal-username"></h4>␊
-                            <p th:text="${entry.content}" class="journal-text"></p>␊
-                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"␊
-                                   class="journal-timestamp"></small>␊
-                        </div>␊
-                        ␊
-                        <!-- Edit button -->␊
-                        <a th:href="@{'/journal/edit?id=' + ${entry.id}}" class="edit-link">Edit</a>␊
-                    </div>␊
-                </li>␊
-            </ul>␊
-        </div>␊
-    </section>␊
-</main>␊␊
-␊␊
-<noscript>␊␊
-    <p class="no-js-warning">Please enable JavaScript to view your latest journal entries.</p>␊␊
-</noscript>␊␊
-␊␊
-<!-- Scripts final -->␊␊
-<script th:src="@{/js/pageSpecific/userJournalImages.js}" defer></script>␊␊
-<script th:src="@{/js/pageSpecific/userJournalEntries.js}" defer></script>␊␊
-␊␊
-</body>␊␊
-</html>␊
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Journal Page</title>
+    <link rel="stylesheet" th:href="@{/css/user/UserJournalEntry.css}">
+    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+</head>
+<body>
+<div th:replace="~{navbar :: navbar}"></div>
+
+<header>
+    <h1>Personal Journal Page</h1>
+</header>
+
+<main>
+    <section class="story-gallery">
+        <div class="journal-header">
+            <div class="journal-heading">
+                <h2 id="h2">Most Recent Journal</h2>
+                <p class="journal-subtitle">Use the arrows or pick a day to jump through your journal timeline.</p>
+            </div>
+            <div class="journal-controls" aria-label="Journal navigation">
+                <button class="nav-button" id="journal-prev" type="button" aria-label="Previous day">
+                    &#8592;
+                </button>
+                <div class="journal-select">
+                    <label for="journal-day-select">Select day</label>
+                    <select id="journal-day-select" disabled>
+                        <option value="">Loading days…</option>
+                    </select>
+                </div>
+                <button class="nav-button" id="journal-next" type="button" aria-label="Next day">
+                    &#8594;
+                </button>
+            </div>
+        </div>
+
+        <div class="entry-list">
+            <p class="journal-day-label" id="journal-day-label" aria-live="polite"></p>
+            <ul id="journal-entry-list" aria-live="polite">
+                <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
+                    <p>You have not written any entries yet!</p>
+                </li>
+                <li th:if="${!#lists.isEmpty(entries)}" class="journal-entry skeleton" th:unless="${entries}">
+                    <div class="story-item">
+                        <div class="journal-media">
+                            <div class="image-placeholder skeleton-block"></div>
+                        </div>
+                        <div class="story-content">
+                            <div class="skeleton-line skeleton-title"></div>
+                            <div class="skeleton-line skeleton-subtitle"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                            <div class="skeleton-line skeleton-timestamp"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<noscript>
+    <p class="no-js-warning">Please enable JavaScript to view your latest journal entries.</p>
+</noscript>
+
+<!-- Scripts final -->
+<script th:src="@{/js/pageSpecific/userJournalImages.js}" defer></script>
+<script th:src="@{/js/pageSpecific/userJournalEntries.js}" defer></script>
+</body>
+</html>
