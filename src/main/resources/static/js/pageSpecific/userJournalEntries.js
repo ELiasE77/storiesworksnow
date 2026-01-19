@@ -9,17 +9,10 @@
     let entriesByDay = new Map();
     let currentIndex = 0;
 
- const renderError = (list) => {
-        clearList(list);
-        const li = document.createElement('li');
-        li.className = 'error-message';
-        li.textContent = 'We could not load your journal entries. Please try again later.';
-        list.appendChild(li);
-        const dayLabel = document.querySelector(dayLabelSelector);
-        if (dayLabel) {
-            dayLabel.textContent = '';
+    const clearList = (list) => {
+        while (list.firstChild) {
+            list.removeChild(list.firstChild);
         }
-        setControlsState({ disabled: true });
     };
 
     const setControlsState = ({ disabled, prevDisabled, nextDisabled }) => {
@@ -65,39 +58,6 @@
         });
     };
 
-    const createMediaContainer = (entry) => {
-        if (!entry.hasImage) {
-            return null;
-        }
-
-        const renderNoEntries = (list) => {
-            clearList(list);
-            const li = document.createElement('li');
-            li.className = 'no-entries-message';
-            li.textContent = 'You have not written any entries yet!';
-            list.appendChild(li);
-            const dayLabel = document.querySelector(dayLabelSelector);
-            if (dayLabel) {
-                dayLabel.textContent = '';
-            }
-        };
-
-    const createMediaContainer = (entry) => {
-        if (!entry.hasImage) {
-            return null;
-        }
-        const mediaContainer = document.createElement('div');
-        mediaContainer.className = 'journal-media';
-        mediaContainer.setAttribute('data-entry-id', entry.id);
-
-        const placeholder = document.createElement('div');
-        placeholder.className = 'image-placeholder';
-        placeholder.textContent = 'Loading image…';
-
-        mediaContainer.appendChild(placeholder);
-        return mediaContainer;
-    };
-
     const formatTimestamp = (timestamp) => {
         if (!timestamp) {
             return '';
@@ -116,10 +76,51 @@
         return `Posted on: ${formatted}`;
     };
 
-        const createEntryElement = (entry) => {␊
-            const li = document.createElement('li');␊
-            li.className = 'journal-entry';␊
-            li.setAttribute('data-entry-id', entry.id);␊
+    const renderNoEntries = (list) => {
+        clearList(list);
+        const li = document.createElement('li');
+        li.className = 'no-entries-message';
+        li.textContent = 'You have not written any entries yet!';
+        list.appendChild(li);
+        const dayLabel = document.querySelector(dayLabelSelector);
+        if (dayLabel) {
+            dayLabel.textContent = '';
+        }
+    };
+
+    const renderError = (list) => {
+        clearList(list);
+        const li = document.createElement('li');
+        li.className = 'error-message';
+        li.textContent = 'We could not load your journal entries. Please try again later.';
+        list.appendChild(li);
+        const dayLabel = document.querySelector(dayLabelSelector);
+        if (dayLabel) {
+            dayLabel.textContent = '';
+        }
+        setControlsState({ disabled: true });
+    };
+
+    const createMediaContainer = (entry) => {
+        if (!entry.hasImage) {
+            return null;
+        }
+        const mediaContainer = document.createElement('div');
+        mediaContainer.className = 'journal-media';
+
+        const placeholder = document.createElement('div');
+        placeholder.className = 'image-placeholder';
+        placeholder.textContent = 'Loading image…';
+
+        mediaContainer.appendChild(placeholder);
+        return mediaContainer;
+    };
+
+    const createEntryElement = (entry) => {
+        const li = document.createElement('li');
+        li.className = 'journal-entry';
+        li.setAttribute('data-entry-id', entry.id);
+        li.setAttribute('data-has-image', String(entry.hasImage));
 
         const storyItem = document.createElement('div');
         storyItem.className = 'story-item';
@@ -176,88 +177,93 @@
 
         const entriesWithImages = list.querySelectorAll('.journal-entry[data-has-image="true"]');
         if (window.JournalImages && typeof window.JournalImages.loadForEntries === 'function') {
-                        window.JournalImages.loadForEntries(entriesWithImages);
-                    }
-                };
+            window.JournalImages.loadForEntries(entriesWithImages);
+        }
+    };
 
-                const renderDayEntries = (list, dayKey) => {
-                    const entries = entriesByDay.get(dayKey) || [];
-                    const dayLabel = document.querySelector(dayLabelSelector);
+    const renderDayEntries = (list, dayKey) => {
+        const entries = entriesByDay.get(dayKey) || [];
+        const dayLabel = document.querySelector(dayLabelSelector);
 
-                    list.classList.add('is-transitioning');
-                    window.setTimeout(() => {
-                        renderEntries(list, entries);
-                        if (dayLabel) {
-                            dayLabel.textContent = entries.length
-                                ? `${formatDayLabel(dayKey)} • ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`
-                                : formatDayLabel(dayKey);
-                        }
-                        list.classList.remove('is-transitioning');
-                    }, 150);
-                };
+        list.classList.add('is-transitioning');
+        window.setTimeout(() => {
+            renderEntries(list, entries.slice(0, 1));
+            if (dayLabel) {
+                const label = formatDayLabel(dayKey);
+                dayLabel.textContent = entries.length
+                    ? `Latest entry for ${label}`
+                    : label;
+            }
+            list.classList.remove('is-transitioning');
+        }, 150);
+    };
 
-                const updateNavigation = (list) => {
-                    if (!dayKeys.length) {
-                        renderNoEntries(list);
-                        setControlsState({ disabled: true });
-                        return;
-                    }
+    const updateNavigation = (list) => {
+        if (!dayKeys.length) {
+            renderNoEntries(list);
+            setControlsState({ disabled: true });
+            return;
+        }
 
-                    currentIndex = Math.min(Math.max(currentIndex, 0), dayKeys.length - 1);
-                    const dayKey = dayKeys[currentIndex];
-                    renderDayEntries(list, dayKey);
+        currentIndex = Math.min(Math.max(currentIndex, 0), dayKeys.length - 1);
+        const dayKey = dayKeys[currentIndex];
+        renderDayEntries(list, dayKey);
 
-                    const select = document.querySelector(selectSelector);
-                    if (select) {
-                        select.value = dayKey;
-                    }
-                    setControlsState({
-                        disabled: false,
-                        prevDisabled: currentIndex === dayKeys.length - 1,
-                        nextDisabled: currentIndex === 0
-                    });
-                };
+        const select = document.querySelector(selectSelector);
+        if (select) {
+            select.value = dayKey;
+        }
+        setControlsState({
+            disabled: false,
+            prevDisabled: currentIndex === dayKeys.length - 1,
+            nextDisabled: currentIndex === 0
+        });
+    };
 
-                const buildDayIndex = (entries) => {
-                    entriesByDay = new Map();
-                    entries.forEach((entry) => {
-                        const key = getDayKey(entry.timestamp);
-                        if (!key) {
-                            return;
-                        }
-                        if (!entriesByDay.has(key)) {
-                            entriesByDay.set(key, []);
-                        }
-                        entriesByDay.get(key).push(entry);
-                    });
+    const buildDayIndex = (entries) => {
+        entriesByDay = new Map();
+        entries.forEach((entry) => {
+            const key = getDayKey(entry.timestamp);
+            if (!key) {
+                return;
+            }
+            if (!entriesByDay.has(key)) {
+                entriesByDay.set(key, []);
+            }
+            entriesByDay.get(key).push(entry);
+        });
 
-                    dayKeys = Array.from(entriesByDay.keys()).sort((a, b) => {
-                        const dateA = new Date(`${a}T00:00:00`);
-                        const dateB = new Date(`${b}T00:00:00`);
-                        return dateB - dateA;
-                    });
-                    currentIndex = 0;
-                };
+        entriesByDay.forEach((dayEntries) => {
+            dayEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        });
 
-                const populateSelect = () => {
-                    const select = document.querySelector(selectSelector);
-                    if (!select) {
-                        return;
-                    }
-                    select.innerHTML = '';
-                    dayKeys.forEach((dayKey) => {
-                        const option = document.createElement('option');
-                        option.value = dayKey;
-                        option.textContent = formatDayLabel(dayKey);
-                        select.appendChild(option);
-                    });
-                };
+        dayKeys = Array.from(entriesByDay.keys()).sort((a, b) => {
+            const dateA = new Date(`${a}T00:00:00`);
+            const dateB = new Date(`${b}T00:00:00`);
+            return dateB - dateA;
+        });
+        currentIndex = 0;
+    };
 
-                const fetchEntries = async () => {
-                    const response = await fetch('/api/journal/entries');
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch entries');
-                    }
+    const populateSelect = () => {
+        const select = document.querySelector(selectSelector);
+        if (!select) {
+            return;
+        }
+        select.innerHTML = '';
+        dayKeys.forEach((dayKey) => {
+            const option = document.createElement('option');
+            option.value = dayKey;
+            option.textContent = formatDayLabel(dayKey);
+            select.appendChild(option);
+        });
+    };
+
+    const fetchEntries = async () => {
+        const response = await fetch('/api/journal/entries');
+        if (!response.ok) {
+            throw new Error('Failed to fetch entries');
+        }
         return response.json();
     };
 
