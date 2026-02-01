@@ -3,6 +3,7 @@ package com.digitallife.journal_site.ChatGptIntegration;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -20,8 +21,8 @@ import java.util.Map;
 @RequestMapping("/api")
 public class ChatGPTController {
 
-    // Load API key from environment (set in /etc/environment or systemd service)
-    private final String OPENAI_API_KEY = System.getenv("OPENAI_API_KEY");
+    @Value("${openai.api.key:}")
+    private String openaiApiKey;
 
     private static final String FINE_TUNED_MODEL_ID =
             "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
@@ -37,9 +38,9 @@ public class ChatGPTController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<String> getFeedback(@RequestBody Map<String, String> request) throws JSONException {
-        if (OPENAI_API_KEY == null || OPENAI_API_KEY.isBlank()) {
+        if (openaiApiKey == null || openaiApiKey.isBlank()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"OPENAI_KEY environment variable is not set\"}");
+                    .body("{\"error\":\"OpenAI API key is not set\"}");
         }
 
         String journalEntry = request.get("content");
@@ -71,7 +72,7 @@ public class ChatGPTController {
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(OPENAI_API_KEY);
+        headers.setBearerAuth(openaiApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<String> entity = new HttpEntity<>(requestBody.toString(), headers);
@@ -113,9 +114,9 @@ public class ChatGPTController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<String> generateImage(@RequestBody Map<String, String> request) throws JSONException {
-        if (OPENAI_API_KEY == null || OPENAI_API_KEY.isBlank()) {
+        if (openaiApiKey == null || openaiApiKey.isBlank()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\":\"OPENAI_KEY environment variable is not set\"}");
+                    .body("{\"error\":\"OpenAI API key is not set\"}");
         }
 
         String journalText = request.get("journalText");
@@ -152,7 +153,7 @@ public class ChatGPTController {
 
         // Headers
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(OPENAI_API_KEY);
+        headers.setBearerAuth(openaiApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);

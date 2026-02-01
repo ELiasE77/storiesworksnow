@@ -56,11 +56,11 @@
         </dependency>
 
         <!-- Lombok for getters/setters, etc. -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
-            <scope>provided</scope>
+        <dependency>␊
+            <groupId>org.projectlombok</groupId>␊
+            <artifactId>lombok</artifactId>␊
+            <version>1.18.36</version>
+            <scope>provided</scope>␊
         </dependency>
 
         <!-- Database Drivers -->

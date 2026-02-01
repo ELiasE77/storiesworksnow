@@ -2,6 +2,7 @@ package com.digitallife.journal_site.profile;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,11 +16,9 @@ import java.nio.file.Path;
  */
 @Service
 public class PersonaService {
-
-    private static final String OPENAI_API_KEY =
-            System.getenv("OPENAI_API_KEY");
+    @Value("${openai.api.key:}")
+    private String openaiApiKey;
     private static final String CHAT_URL = "https://api.openai.com/v1/chat/completions";
-
     private final RestTemplate rest = new RestTemplate();
 
     /**
@@ -46,6 +45,7 @@ public class PersonaService {
      */
     public String generatePersonaFeature(Profile profile) {
         try {
+            ensureApiKey();
             JSONArray messages = new JSONArray();
 
             // System prompt
@@ -91,7 +91,7 @@ public class PersonaService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(OPENAI_API_KEY);
+            headers.setBearerAuth(openaiApiKey);
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
@@ -116,6 +116,7 @@ public class PersonaService {
      */
     public String updatePersonaFeature(Profile profile, String entryContent) {
         try {
+            ensureApiKey();
             String current = profile.getPersonaFeature();
             if (current == null || current.isBlank()) {
                 current = generatePersonaFeature(profile);
@@ -161,7 +162,7 @@ public class PersonaService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(OPENAI_API_KEY);
+            headers.setBearerAuth(openaiApiKey);
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
@@ -195,5 +196,11 @@ public class PersonaService {
 
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
+    }
+
+    private void ensureApiKey() {
+        if (openaiApiKey == null || openaiApiKey.isBlank()) {
+            throw new IllegalStateException("OpenAI API key is not set");
+        }
     }
 }

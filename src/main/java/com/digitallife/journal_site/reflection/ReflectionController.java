@@ -3,6 +3,7 @@ package com.digitallife.journal_site.reflection;
 import com.digitallife.journal_site.Journal.JournalEntry;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,7 +19,8 @@ import java.util.Map;
 @RequestMapping("/api/reflection")
 public class ReflectionController {
 
-    private static final String OPENAI_KEY = "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";
+    @Value("${openai.api.key:}")
+    private String openaiApiKey;
     private static final String CHAT_URL = "https://api.openai.com/v1/chat/completions";
     private static final String MODEL_ID = "ft:gpt-4o-mini-2024-07-18:personal:stories:AIydAQCN";
 
@@ -31,6 +33,9 @@ public class ReflectionController {
     @PostMapping("/{entryId}/message")
     public ResponseEntity<String> converse(@PathVariable Long entryId,
                                            @RequestBody Map<String, String> body) {
+        if (openaiApiKey == null || openaiApiKey.isBlank()) {
+            return ResponseEntity.status(500).body("{\"error\":\"OpenAI API key is not set\"}");
+        }
         String userMsg = body.getOrDefault("message", "");
         if (userMsg == null || userMsg.isBlank()) {
             return ResponseEntity.badRequest().body("{\"error\":\"Message cannot be empty\"}");
@@ -87,7 +92,7 @@ public class ReflectionController {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + OPENAI_KEY);
+        headers.set("Authorization", "Bearer " + openaiApiKey);
         HttpEntity<String> req = new HttpEntity<>(bodyJson.toString(), headers);
         RestTemplate rest = new RestTemplate();
         ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
