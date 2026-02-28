@@ -2,8 +2,12 @@ package com.digitallife.journal_site.Journal;
 
 import com.digitallife.journal_site.communities.Community;
 import com.digitallife.journal_site.user.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "journal_entries")
@@ -31,6 +35,10 @@ public class JournalEntry {
     @Lob
     @Column(name = "image_url", columnDefinition = "MEDIUMTEXT")
     private String imageUrl;
+
+    @Lob
+    @Column(name = "image_urls_json", columnDefinition = "MEDIUMTEXT")
+    private String imageUrlsJson;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -60,6 +68,32 @@ public class JournalEntry {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getImageUrlsJson() {
+        return imageUrlsJson;
+    }
+
+    public void setImageUrlsJson(String imageUrlsJson) {
+        this.imageUrlsJson = imageUrlsJson;
+    }
+
+    @Transient
+    public List<String> getImageGallery() {
+        List<String> images = new ArrayList<>();
+
+        if (imageUrlsJson != null && !imageUrlsJson.isBlank()) {
+            try {
+                images.addAll(new ObjectMapper().readValue(imageUrlsJson, new TypeReference<List<String>>() {}));
+            } catch (Exception ignored) {
+            }
+        }
+
+        if (imageUrl != null && !imageUrl.isBlank() && !images.contains(imageUrl)) {
+            images.add(imageUrl);
+        }
+
+        return images;
+    }
 
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }

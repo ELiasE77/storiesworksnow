@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -60,7 +61,8 @@ public class JournalController {
                 user,
                 dto.getTitle(),
                 dto.getContent(),
-                dto.getImageUrl(),   // raw base64 only
+                dto.getImageUrl(),
+                dto.getImageUrls(),
                 dto.getCommunityId(),
                 dto.getVisibility()
         );
@@ -136,6 +138,7 @@ public class JournalController {
             @RequestParam(value="title", required = false) String title,
             @RequestParam("content") String content,
             @RequestParam(value="imageUrl", required=false) String imageUrl,
+            @RequestParam(value="imageUrlsJson", required=false) String imageUrlsJson,
             @RequestParam("visibility") JournalEntry.Visibility visibility,
             @RequestParam(value="communityId", required=false) String communityIdStr
     ) {
@@ -144,6 +147,18 @@ public class JournalController {
             int comma = imageUrl.indexOf(',');
             if (comma > 0) {
                 imageUrl = imageUrl.substring(comma + 1);
+            }
+        }
+
+        List<String> imageUrls = new ArrayList<>();
+        if (imageUrlsJson != null && !imageUrlsJson.isBlank()) {
+            try {
+                imageUrls = new com.fasterxml.jackson.databind.ObjectMapper().readValue(
+                        imageUrlsJson,
+                        new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {}
+                );
+            } catch (Exception ignore) {
+                // keep empty list
             }
         }
 
@@ -158,7 +173,7 @@ public class JournalController {
         }
 
         journalService.updateJournalEntry(
-                id, title, content, imageUrl, visibility, communityId
+                id, title, content, imageUrl, imageUrls, visibility, communityId
         );
         return "redirect:/journal/home";
     }

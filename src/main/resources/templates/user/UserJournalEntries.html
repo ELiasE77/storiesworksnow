@@ -10,45 +10,137 @@
 
 <div th:replace="~{navbar :: navbar}"></div>
 
-<header>
-  <h1>Personal Journal Page</h1>
-</header>
-
-<main>
-  <section class="story-gallery">
-    <h2 id="h2">Recent Journal Entries</h2>
-    <div class="entry-list">
-      <ul>
-        <!-- No entries message -->
-        <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
-          <p>You have not written any entries yet!</p>
-        </li>
-
-        <!-- Loop through entries -->
-        <li th:each="entry : ${entries}" class="journal-entry">
-          <div class="story-item">
-            <!-- Only show if we have an imageUrl -->
-            <div th:if="${entry.imageUrl}">
-              <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
-                   class="journal-image"
-                   alt="Journal entry image"/>
-            </div>
-
-            <div id="story-content">
-              <h3 th:text="${entry.title}"         class="journal-title"></h3>
-              <h4 th:text="${entry.user.username}" class="journal-username"></h4>
-              <p  th:text="${entry.content}"       class="journal-text"></p>
-              <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
-                     class="journal-timestamp"></small>
-            </div>
-
-            <a th:href="@{'/journal/edit?id=' + ${entry.id}}">Edit</a>
-          </div>
-        </li>
-      </ul>
+<main class="entry-shell">
+  <header class="entry-header">
+    <h1>Your Story</h1>
+    <div class="entry-nav">
+      <button id="prevEntryBtn" type="button">◀</button>
+      <select id="entryDatePicker"></select>
+      <button id="nextEntryBtn" type="button">▶</button>
     </div>
+  </header>
+
+  <section th:if="${#lists.isEmpty(entries)}" class="empty-state">
+    <p>You have not written any entries yet!</p>
+  </section>
+
+  <section th:if="${!#lists.isEmpty(entries)}" class="entry-card">
+    <div class="photo-carousel">
+      <button id="prevPhotoBtn" type="button">‹</button>
+      <img id="entryPhoto" alt="Journal image" />
+      <button id="nextPhotoBtn" type="button">›</button>
+    </div>
+    <div class="photo-meta"><span id="photoCount"></span></div>
+
+    <article>
+      <h2 id="entryTitle"></h2>
+      <p id="entryText"></p>
+      <small id="entryTimestamp"></small>
+    </article>
+
+    <a id="editEntryLink" class="edit-link">Edit</a>
   </section>
 </main>
+
+<script th:inline="javascript">
+  const entries = [
+    /*[# th:each="entry, entryStat : ${entries}"]*/
+    {
+      id: /*[[${entry.id}]]*/ 0,
+      title: /*[[${entry.title}]]*/ '',
+      content: /*[[${entry.content}]]*/ '',
+      timestamp: /*[[${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}]]*/ '',
+      images: [
+        /*[# th:each="img64, img64Stat : ${entry.imageGallery}"]*/
+        /*[[${img64}]]*/ ''
+        /*[# th:if="${!img64Stat.last}"]*/,/*[/]*/
+        /*[/]*/
+      ]
+    }
+    /*[# th:if="${!entryStat.last}"]*/,/*[/]*/
+    /*[/]*/
+  ];
+
+  let entryIndex = 0;
+  let photoIndex = 0;
+
+  const entryPhoto = document.getElementById('entryPhoto');
+  const photoCount = document.getElementById('photoCount');
+  const entryTitle = document.getElementById('entryTitle');
+  const entryText = document.getElementById('entryText');
+  const entryTimestamp = document.getElementById('entryTimestamp');
+  const editEntryLink = document.getElementById('editEntryLink');
+  const picker = document.getElementById('entryDatePicker');
+
+  function buildPicker() {
+    picker.innerHTML = '';
+    entries.forEach((entry, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = entry.timestamp;
+      picker.appendChild(opt);
+    });
+  }
+
+  function renderEntry() {
+    if (!entries.length) return;
+    const entry = entries[entryIndex];
+
+    if (photoIndex >= entry.images.length) photoIndex = 0;
+    if (entry.images.length) {
+      entryPhoto.src = `data:image/png;base64,${entry.images[photoIndex]}`;
+      photoCount.textContent = `${photoIndex + 1} / ${entry.images.length}`;
+    } else {
+      entryPhoto.src = '';
+      photoCount.textContent = 'No photos';
+    }
+
+    entryTitle.textContent = entry.title || 'Untitled';
+    entryText.textContent = entry.content || '';
+    entryTimestamp.textContent = `Posted on: ${entry.timestamp}`;
+    editEntryLink.href = `/journal/edit?id=${entry.id}`;
+    picker.value = String(entryIndex);
+  }
+
+  document.getElementById('prevEntryBtn')?.addEventListener('click', () => {
+    if (!entries.length) return;
+    entryIndex = (entryIndex - 1 + entries.length) % entries.length;
+    photoIndex = 0;
+    renderEntry();
+  });
+
+  document.getElementById('nextEntryBtn')?.addEventListener('click', () => {
+    if (!entries.length) return;
+    entryIndex = (entryIndex + 1) % entries.length;
+    photoIndex = 0;
+    renderEntry();
+  });
+
+  document.getElementById('prevPhotoBtn')?.addEventListener('click', () => {
+    const images = entries[entryIndex]?.images || [];
+    if (!images.length) return;
+    photoIndex = (photoIndex - 1 + images.length) % images.length;
+    renderEntry();
+  });
+
+  document.getElementById('nextPhotoBtn')?.addEventListener('click', () => {
+    const images = entries[entryIndex]?.images || [];
+    if (!images.length) return;
+    photoIndex = (photoIndex + 1) % images.length;
+    renderEntry();
+  });
+
+  picker?.addEventListener('change', (event) => {
+    entryIndex = Number(event.target.value);
+    photoIndex = 0;
+    renderEntry();
+  });
+
+  if (entries.length) {
+    buildPicker();
+    renderEntry();
+  }
+</script>
 
 </body>
 </html>

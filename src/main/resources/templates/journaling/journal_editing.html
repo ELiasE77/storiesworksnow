@@ -39,6 +39,19 @@
              name="imageUrl"
              id="imageUrl"
              th:value="${entry.imageUrl}" />
+      <input type="hidden"
+             name="imageUrlsJson"
+             id="imageUrlsJson"
+             th:value="${#strings.defaultString(entry.imageUrlsJson,'[]')}" />
+
+      <label for="photoUpload">Add your own photos</label>
+      <input type="file" id="photoUpload" accept="image/*" multiple />
+      <div id="photoPreviewRow" style="display:flex;gap:8px;overflow-x:auto;margin-bottom:16px;">
+        <img th:each="img64 : ${entry.imageGallery}"
+             th:src="'data:image/png;base64,' + ${img64}"
+             style="width:80px;height:80px;object-fit:cover;border-radius:8px;"
+             alt="Journal image" />
+      </div>
 
       <!-- Visibility -->
       <label for="visibility">Visibility:</label>
@@ -171,13 +184,53 @@
     if (removeBtn) {
       removeBtn.addEventListener("click", () => {
         document.getElementById("imageUrl").value = ""; // clear hidden input
+        document.getElementById("imageUrlsJson").value = "[]";
+        selectedImages.length = 0;
         const img = document.getElementById("current-image");
         if (img) img.style.display = "none";
         removeBtn.style.display = "none";
       });
     }
   });
-</script>
+  const selectedImages = [];
+  window.selectedImages = selectedImages;
+  try {
+    selectedImages.push(...JSON.parse(document.getElementById("imageUrlsJson").value || "[]"));
+  } catch (e) {}
 
+  function syncImages() {
+    document.getElementById("imageUrlsJson").value = JSON.stringify(selectedImages);
+    document.getElementById("imageUrl").value = selectedImages[0] || "";
+  }
+
+  document.getElementById("photoUpload")?.addEventListener("change", async function(event) {
+    const files = [...event.target.files];
+    for (const file of files) {
+      const base64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result || "").toString().split(",")[1] || "");
+        reader.readAsDataURL(file);
+      });
+      if (base64 && !selectedImages.includes(base64)) {
+        selectedImages.push(base64);
+      }
+    }
+    const preview = document.getElementById("photoPreviewRow");
+    preview.innerHTML = "";
+    selectedImages.forEach((img64) => {
+      const img = document.createElement("img");
+      img.src = `data:image/png;base64,${img64}`;
+      img.style.width = "80px";
+      img.style.height = "80px";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "8px";
+      preview.appendChild(img);
+    });
+    syncImages();
+    event.target.value = "";
+  });
+
+  syncImages();
+</script>
 </body>
 </html>

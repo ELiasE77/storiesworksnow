@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageUrlInput = document.getElementById('imageUrl');
     const generatedImage = document.getElementById('generated-image');
     const generatedImageContainer = document.getElementById('generated-image-container');
+    const imageUrlsJsonInput = document.getElementById('imageUrlsJson');
     const pictureTypeSelect = document.getElementById('pictureType');
 
     // Handle style selection
@@ -74,9 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
             generatedImage.style.display = 'block';
             generatedImageContainer.style.display = 'block';
 
-            // Store raw base64 in hidden input for later form submission
-            imageUrlInput.value = base64Image;
-
+            // Store raw base64 in hidden inputs for later form submission
+            if (imageUrlsJsonInput) {
+                let current = [];
+                try {
+                    current = JSON.parse(imageUrlsJsonInput.value || '[]');
+                } catch (e) {
+                    current = [];
+                }
+                if (!current.includes(base64Image)) {
+                    current.unshift(base64Image);
+                }
+                if (Array.isArray(window.selectedImages) && !window.selectedImages.includes(base64Image)) {
+                    window.selectedImages.unshift(base64Image);
+                }
+                imageUrlsJsonInput.value = JSON.stringify(current);
+            }
         } catch (error) {
             console.error(error);
             alert('Failed to generate image. Please try again.');

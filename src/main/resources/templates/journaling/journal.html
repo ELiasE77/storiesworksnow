@@ -8,6 +8,9 @@
   <link rel="stylesheet" th:href="@{/css/navbar.css}">
   <style>
     #speechIndicator { display: none; color: green; }
+    .photo-tools { margin: 12px 0; display: flex; gap: 10px; align-items: center; }
+    .photo-preview-row { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; }
+    .photo-preview-row img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -16,7 +19,6 @@
   <div class="journalEntry-container">
     <h1>Create your Journal entry!</h1>
 
-    <!-- NOTE: no action or method here; JS will POST to /api/journal/save -->
     <form id="journal-form">
       <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
       <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
@@ -32,13 +34,18 @@
         <label for="community">Select a community:</label>
         <select name="communityId" id="community">
           <option value="" disabled selected>Select a community</option>
-          <option th:each="c : ${communities}"
-                  th:value="${c.id}"
-                  th:text="${c.name}"></option>
+          <option th:each="c : ${communities}" th:value="${c.id}" th:text="${c.name}"></option>
         </select>
       </div>
 
       <input type="hidden" name="imageUrl" id="imageUrl" value="">
+      <input type="hidden" name="imageUrlsJson" id="imageUrlsJson" value="[]">
+
+      <div class="photo-tools">
+        <label for="photoUpload">Add your own photos</label>
+        <input type="file" id="photoUpload" accept="image/*" multiple>
+      </div>
+      <div id="photoPreviewRow" class="photo-preview-row"></div>
 
       <div class="button-group">
         <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
@@ -76,31 +83,71 @@
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
 
-<!-- JSON‐submit handler -->
 <script>
-  document.getElementById('journal-form')
-          .addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const payload = {
-              title:       document.getElementById('titleText').value,
-              content:     document.getElementById('journal-content').value,
-              visibility:  document.getElementById('visibility').value,
-              communityId: document.getElementById('community').value || null,
-              imageUrl:    document.getElementById('imageUrl').value
-            };
-            const res = await fetch('/api/journal/save', {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              const json = await res.json();
-              // redirect into “Your Entries”
-              window.location.href = '/journal/home';
-            } else {
-              console.error('Save failed', await res.text());
-            }
-          });
+  const selectedImages = [];
+  window.selectedImages = selectedImages;
+
+  function syncImages() {
+    document.getElementById('imageUrlsJson').value = JSON.stringify(selectedImages);
+    document.getElementById('imageUrl').value = selectedImages[0] || '';
+  }
+
+  try {
+    const existing = JSON.parse(document.getElementById('imageUrlsJson').value || "[]");
+    selectedImages.push(...existing);
+  } catch (e) {}
+
+  document.getElementById('photoUpload').addEventListener('change', async function (event) {
+    const files = [...event.target.files];
+    for (const file of files) {
+      const base64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result || '';
+          resolve(result.toString().split(',')[1] || '');
+        };
+        reader.readAsDataURL(file);
+      });
+      if (base64) {
+        selectedImages.push(base64);
+      }
+    }
+
+    const preview = document.getElementById('photoPreviewRow');
+    preview.innerHTML = '';
+    selectedImages.forEach((img64) => {
+      const img = document.createElement('img');
+      img.src = `data:image/png;base64,${img64}`;
+      preview.appendChild(img);
+    });
+    syncImages();
+    event.target.value = '';
+  });
+
+  document.getElementById('journal-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    syncImages();
+
+    const payload = {
+      title: document.getElementById('titleText').value,
+      content: document.getElementById('journal-content').value,
+      visibility: document.getElementById('visibility').value,
+      communityId: document.getElementById('community').value || null,
+      imageUrl: document.getElementById('imageUrl').value,
+      imageUrls: JSON.parse(document.getElementById('imageUrlsJson').value || '[]')
+    };
+
+    const res = await fetch('/api/journal/save', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      window.location.href = '/journal/home';
+    } else {
+      console.error('Save failed', await res.text());
+    }
+  });
 </script>
 </body>
 </html>
