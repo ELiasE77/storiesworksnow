@@ -60,7 +60,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
 
 
     /* =========================================================
-       TIMELINE WITH IMAGES (handles single + multiple images)
+       TIMELINE WITH IMAGES (SAFE: only checks existing field)
        ========================================================= */
 
     @Query("""
@@ -69,10 +69,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
         WHERE e.user = :user
           AND FUNCTION('MONTH', e.timestamp) = :month
           AND FUNCTION('YEAR', e.timestamp) = :year
-          AND (
-                e.imageUrl IS NOT NULL
-                OR e.imageUrls IS NOT EMPTY
-              )
+          AND e.imageUrl IS NOT NULL
         ORDER BY e.timestamp DESC
     """)
     List<JournalEntry> findByUserAndMonthAndYearWithImages(
@@ -100,7 +97,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
 
 
     /* =========================================================
-       DISTINCT MONTHS & YEARS WITH IMAGES
+       DISTINCT MONTHS & YEARS WITH IMAGES (SAFE)
        ========================================================= */
 
     @Query("""
@@ -108,10 +105,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, Long
                         FUNCTION('YEAR',  e.timestamp)
         FROM JournalEntry e
         WHERE e.user = :user
-          AND (
-                e.imageUrl IS NOT NULL
-                OR e.imageUrls IS NOT EMPTY
-              )
+          AND e.imageUrl IS NOT NULL
         ORDER BY FUNCTION('YEAR',  e.timestamp) DESC,
                  FUNCTION('MONTH', e.timestamp) DESC
     """)
