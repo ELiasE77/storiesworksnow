@@ -1,146 +1,158 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
-  <meta charset="UTF-8">
-  <title>Personal Journal Page</title>
-  <link rel="stylesheet" th:href="@{/css/user/UserJournalEntry.css}">
-  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{archive.pageTitle}">All entries | Journally</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <section class="hero-card card archive-hero-card journal-list-hero">
+        <div class="page-header">
+            <div>
+                <span class="micro-label" th:text="#{archive.allEntriesLabel}">Journal archive</span>
+                <h1 th:text="#{archive.allEntriesHeading}">All journal entries</h1>
+                <p th:text="#{archive.allEntriesSubheading(${entryCount})}">Every saved reflection, newest first.</p>
+            </div>
+            <div class="button-row">
+                <a class="button" th:href="@{/journal}" th:text="#{home.newEntry}">New entry</a>
+            </div>
+        </div>
+    </section>
 
-<main class="entry-shell">
-  <header class="entry-header">
-    <h1>Your Story</h1>
-    <div class="entry-nav">
-      <button id="prevEntryBtn" type="button">◀</button>
-      <select id="entryDatePicker"></select>
-      <button id="nextEntryBtn" type="button">▶</button>
-    </div>
-  </header>
+    <section class="journal-entry-list">
+        <div th:if="${#lists.isEmpty(entries)}" class="empty-state">
+            <h2 th:text="#{archive.empty}">You have not saved any entries yet.</h2>
+            <a class="button" th:href="@{/journal}" th:text="#{home.newEntry}">New entry</a>
+        </div>
 
-  <section th:if="${#lists.isEmpty(entries)}" class="empty-state">
-    <p>You have not written any entries yet!</p>
-  </section>
+        <article class="journal-entry-row" th:each="entry : ${entries}">
+            <a class="journal-entry-image-frame"
+               th:href="@{/journal/entry(id=${entry.id})}"
+               th:classappend="${entry.hasThumbnail} ? ' is-loaded' : (${entry.hasImage} ? ' is-loading' : ' is-empty')"
+               th:data-image-endpoint="${entry.hasImage and !entry.hasThumbnail ? '/api/journal/' + entry.id + '/images' : null}"
+               th:data-empty-label="#{archive.noImage}">
+                <img th:if="${entry.hasThumbnail}"
+                     th:src="${entry.thumbnailUrl}"
+                     th:alt="#{common.imageAlt.journal}"
+                     loading="lazy">
+                <img th:unless="${entry.hasThumbnail}"
+                     class="journal-entry-lazy-image"
+                     th:alt="#{common.imageAlt.journal}"
+                     loading="lazy"
+                     hidden>
+                <span class="journal-image-placeholder"
+                      th:text="${entry.hasImage} ? #{archive.imageLoading} : #{archive.noImage}">Loading image</span>
+            </a>
 
-  <section th:if="${!#lists.isEmpty(entries)}" class="entry-card">
-    <div class="photo-carousel">
-      <button id="prevPhotoBtn" type="button">‹</button>
-      <img id="entryPhoto" alt="Journal image" />
-      <button id="nextPhotoBtn" type="button">›</button>
-    </div>
-    <div class="photo-meta"><span id="photoCount"></span></div>
+            <div class="journal-entry-list-copy">
+                <div class="entry-meta-row">
+                    <div>
+                        <span class="micro-label" th:text="${#temporals.format(entry.timestamp, 'EEEE, dd. MMMM yyyy HH:mm')}">Friday, 27 February 2026 18:30</span>
+                        <h2 th:text="${#strings.isEmpty(entry.title)} ? #{common.untitled} : ${entry.title}">Entry title</h2>
+                    </div>
+                    <span class="monthly-visibility" th:text="${entry.visibility}">PRIVATE</span>
+                </div>
 
-    <article>
-      <h2 id="entryTitle"></h2>
-      <p id="entryText"></p>
-      <small id="entryTimestamp"></small>
-    </article>
+                <p class="excerpt" th:text="${entry.excerpt}">Entry excerpt...</p>
 
-    <a id="editEntryLink" class="edit-link">Edit</a>
-  </section>
+                <div class="journal-entry-row-footer">
+                    <div>
+                        <span class="micro-label" th:text="#{journal.likertLabel}">Likert scale</span>
+                        <div class="mood-track"
+                             th:style="'--mood-percent:' + ${((entry.moodScore - 1) * 100 / 6)} + '%'"></div>
+                    </div>
+                    <div class="chip-list"
+                         th:if="${!#lists.isEmpty(entry.emotionTags) or (entry.customEmotion != null and !#strings.isEmpty(entry.customEmotion))}">
+                        <span class="chip" th:each="tag : ${entry.emotionTags}" th:text="${@siteText.localizeEmotionTag(tag, #locale)}">Happy</span>
+                        <span class="chip" th:if="${entry.customEmotion != null and !#strings.isEmpty(entry.customEmotion)}" th:text="${entry.customEmotion}">Curious</span>
+                    </div>
+                </div>
+
+                <p class="helper-text"
+                   th:if="${entry.quickNote != null and !#strings.isEmpty(entry.quickNote)}"
+                   th:text="#{home.recentEntry.quickNotePrefix(${entry.quickNote})}">Quick note...</p>
+
+                <div class="button-row">
+                    <a class="ghost-button" th:href="@{/journal/entry(id=${entry.id})}" th:text="#{common.open}">Open</a>
+                    <a class="ghost-button" th:href="@{/journal/edit(id=${entry.id})}" th:text="#{common.edit}">Edit</a>
+                </div>
+            </div>
+        </article>
+    </section>
 </main>
 
-<script th:inline="javascript">
-  const entries = [
-    /*[# th:each="entry, entryStat : ${entries}"]*/
-    {
-      id: /*[[${entry.id}]]*/ 0,
-      title: /*[[${entry.title}]]*/ '',
-      content: /*[[${entry.content}]]*/ '',
-      timestamp: /*[[${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}]]*/ '',
-      images: [
-        /*[# th:each="img64, img64Stat : ${entry.imageGallery}"]*/
-        /*[[${img64}]]*/ ''
-        /*[# th:if="${!img64Stat.last}"]*/,/*[/]*/
-        /*[/]*/
-      ]
-    }
-    /*[# th:if="${!entryStat.last}"]*/,/*[/]*/
-    /*[/]*/
-  ];
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const frames = Array.from(document.querySelectorAll("[data-image-endpoint]"));
 
-  let entryIndex = 0;
-  let photoIndex = 0;
+        const markEmpty = (frame) => {
+            frame.classList.remove("is-loading");
+            frame.classList.add("is-empty");
+            const placeholder = frame.querySelector(".journal-image-placeholder");
+            if (placeholder && frame.dataset.emptyLabel) {
+                placeholder.textContent = frame.dataset.emptyLabel;
+            }
+        };
 
-  const entryPhoto = document.getElementById('entryPhoto');
-  const photoCount = document.getElementById('photoCount');
-  const entryTitle = document.getElementById('entryTitle');
-  const entryText = document.getElementById('entryText');
-  const entryTimestamp = document.getElementById('entryTimestamp');
-  const editEntryLink = document.getElementById('editEntryLink');
-  const picker = document.getElementById('entryDatePicker');
+        const loadFrame = async (frame) => {
+            if (frame.dataset.loaded === "true") {
+                return;
+            }
+            frame.dataset.loaded = "true";
 
-  function buildPicker() {
-    picker.innerHTML = '';
-    entries.forEach((entry, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = entry.timestamp;
-      picker.appendChild(opt);
+            try {
+                const response = await fetch(frame.dataset.imageEndpoint, {
+                    headers: { "Accept": "application/json" }
+                });
+                if (!response.ok) {
+                    markEmpty(frame);
+                    return;
+                }
+
+                const payload = await response.json();
+                const src = Array.isArray(payload.images) ? payload.images[0] : null;
+                const image = frame.querySelector(".journal-entry-lazy-image");
+                if (!src || !image) {
+                    markEmpty(frame);
+                    return;
+                }
+
+                image.addEventListener("load", () => {
+                    frame.classList.remove("is-loading", "is-empty");
+                    frame.classList.add("is-loaded");
+                }, { once: true });
+                image.src = src;
+                image.hidden = false;
+                if (image.complete) {
+                    frame.classList.remove("is-loading", "is-empty");
+                    frame.classList.add("is-loaded");
+                }
+            } catch (error) {
+                markEmpty(frame);
+            }
+        };
+
+        if ("IntersectionObserver" in window) {
+            const observer = new IntersectionObserver((observed) => {
+                observed.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+                    observer.unobserve(entry.target);
+                    loadFrame(entry.target);
+                });
+            }, { rootMargin: "260px" });
+
+            frames.forEach((frame) => observer.observe(frame));
+            return;
+        }
+
+        frames.forEach(loadFrame);
     });
-  }
-
-  function renderEntry() {
-    if (!entries.length) return;
-    const entry = entries[entryIndex];
-
-    if (photoIndex >= entry.images.length) photoIndex = 0;
-    if (entry.images.length) {
-      entryPhoto.src = `data:image/png;base64,${entry.images[photoIndex]}`;
-      photoCount.textContent = `${photoIndex + 1} / ${entry.images.length}`;
-    } else {
-      entryPhoto.src = '';
-      photoCount.textContent = 'No photos';
-    }
-
-    entryTitle.textContent = entry.title || 'Untitled';
-    entryText.textContent = entry.content || '';
-    entryTimestamp.textContent = `Posted on: ${entry.timestamp}`;
-    editEntryLink.href = `/journal/edit?id=${entry.id}`;
-    picker.value = String(entryIndex);
-  }
-
-  document.getElementById('prevEntryBtn')?.addEventListener('click', () => {
-    if (!entries.length) return;
-    entryIndex = (entryIndex - 1 + entries.length) % entries.length;
-    photoIndex = 0;
-    renderEntry();
-  });
-
-  document.getElementById('nextEntryBtn')?.addEventListener('click', () => {
-    if (!entries.length) return;
-    entryIndex = (entryIndex + 1) % entries.length;
-    photoIndex = 0;
-    renderEntry();
-  });
-
-  document.getElementById('prevPhotoBtn')?.addEventListener('click', () => {
-    const images = entries[entryIndex]?.images || [];
-    if (!images.length) return;
-    photoIndex = (photoIndex - 1 + images.length) % images.length;
-    renderEntry();
-  });
-
-  document.getElementById('nextPhotoBtn')?.addEventListener('click', () => {
-    const images = entries[entryIndex]?.images || [];
-    if (!images.length) return;
-    photoIndex = (photoIndex + 1) % images.length;
-    renderEntry();
-  });
-
-  picker?.addEventListener('change', (event) => {
-    entryIndex = Number(event.target.value);
-    photoIndex = 0;
-    renderEntry();
-  });
-
-  if (entries.length) {
-    buildPicker();
-    renderEntry();
-  }
 </script>
-
 </body>
 </html>

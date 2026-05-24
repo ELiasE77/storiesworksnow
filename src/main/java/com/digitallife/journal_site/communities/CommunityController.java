@@ -1,11 +1,12 @@
 package com.digitallife.journal_site.communities;
 
-import com.digitallife.journal_site.Journal.JournalEntry;
+import com.digitallife.journal_site.Journal.JournalEntryListItem;
 import com.digitallife.journal_site.Journal.JournalEntryRepository;
 import com.digitallife.journal_site.Journal.JournalService;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,7 +45,7 @@ public class CommunityController {
         String username = authentication.getName();
 
         // Fetch the user by query from the join table
-        Set<Community> communities = communityService.findCommunityByUsername(username);
+        List<CommunitySummary> communities = communityService.findCommunitySummariesByUsername(username);
 
         //add them to the model, so they can be accessed on the front end
         model.addAttribute("communities", communities);
@@ -55,7 +56,7 @@ public class CommunityController {
 
     @GetMapping("/communityOverview")
     public String showCommunityOverview(Model model) {
-        List<Community> communities = communityService.findAll();
+        List<CommunitySummary> communities = communityService.findAllSummaries();
 
         model.addAttribute("communities", communities);
 
@@ -76,7 +77,7 @@ public class CommunityController {
         Community community = communityService.findByID(communityId);
 
         // Fetch the journal entries for this community, ordered by date (most recent first)
-        List<JournalEntry> journalEntries = journalService.findCommunityEntries(community);
+        List<JournalEntryListItem> journalEntries = journalService.findCommunityEntryItems(community, PageRequest.of(0, 20));
 
 
         // Add community and journal entries to the model

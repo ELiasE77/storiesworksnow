@@ -1,5 +1,6 @@
 package com.digitallife.journal_site.profile;
 
+import com.digitallife.journal_site.ChatGptIntegration.OpenAiKeyProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.*;
@@ -16,11 +17,14 @@ import java.nio.file.Path;
 @Service
 public class PersonaService {
 
-    private static final String OPENAI_API_KEY =
-            System.getenv("OPENAI_API_KEY");
     private static final String CHAT_URL = "https://api.openai.com/v1/chat/completions";
 
+    private final OpenAiKeyProvider openAiKeyProvider;
     private final RestTemplate rest = new RestTemplate();
+
+    public PersonaService(OpenAiKeyProvider openAiKeyProvider) {
+        this.openAiKeyProvider = openAiKeyProvider;
+    }
 
     /**
      * Analyse the uploaded image and return a JSON description.
@@ -46,6 +50,10 @@ public class PersonaService {
      */
     public String generatePersonaFeature(Profile profile) {
         try {
+            if (!openAiKeyProvider.isConfigured()) {
+                throw new IllegalStateException(openAiKeyProvider.getConfigurationHelp());
+            }
+
             JSONArray messages = new JSONArray();
 
             // System prompt
@@ -91,7 +99,7 @@ public class PersonaService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(OPENAI_API_KEY);
+            headers.setBearerAuth(openAiKeyProvider.getApiKey());
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);
@@ -116,6 +124,10 @@ public class PersonaService {
      */
     public String updatePersonaFeature(Profile profile, String entryContent) {
         try {
+            if (!openAiKeyProvider.isConfigured()) {
+                throw new IllegalStateException(openAiKeyProvider.getConfigurationHelp());
+            }
+
             String current = profile.getPersonaFeature();
             if (current == null || current.isBlank()) {
                 current = generatePersonaFeature(profile);
@@ -161,7 +173,7 @@ public class PersonaService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(OPENAI_API_KEY);
+            headers.setBearerAuth(openAiKeyProvider.getApiKey());
 
             HttpEntity<String> req = new HttpEntity<>(body.toString(), headers);
             ResponseEntity<String> resp = rest.postForEntity(CHAT_URL, req, String.class);

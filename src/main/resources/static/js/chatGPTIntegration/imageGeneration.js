@@ -1,99 +1,90 @@
-// Wait until DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-    const styleOptions = document.querySelectorAll('.style-option');
+    const i18n = window.journallyI18n || {};
+    const msg = (key, fallback) => i18n[key] || fallback;
     const generateButton = document.getElementById('generate-image');
     const loadingIndicator = document.getElementById('loading-indicator');
     const imageUrlInput = document.getElementById('imageUrl');
     const generatedImage = document.getElementById('generated-image');
     const generatedImageContainer = document.getElementById('generated-image-container');
     const imageUrlsJsonInput = document.getElementById('imageUrlsJson');
-    const pictureTypeSelect = document.getElementById('pictureType');
-
-    // Handle style selection
-    styleOptions.forEach(option => {
-        option.addEventListener('click', function () {
-            styleOptions.forEach(opt => opt.classList.remove('selected'));
-            this.classList.add('selected');
-            document.getElementById('selected-style').value = this.getAttribute('data-style');
-        });
-    });
-
-    // Handle picture type (regular / personalized / none)
-    if (pictureTypeSelect) {
-        pictureTypeSelect.addEventListener('change', function () {
-            if (this.value === "none") {
-                // Clear and hide any image
-                const oldImg = document.getElementById('current-image');
-                if (oldImg) oldImg.remove();
-
-                generatedImage.src = "";
-                generatedImage.style.display = "none";
-                generatedImageContainer.style.display = "none";
-
-                // Reset hidden input
-                imageUrlInput.value = "";
-            }
-        });
-    }
 
     if (!generateButton) {
-        console.error('Generate Image button not found');
         return;
     }
 
-    generateButton.addEventListener('click', async function () {
-        const journalText = document.getElementById('journal-content').value;
-        const selectedStyle = document.getElementById('selected-style').value;
-        const pictureType = pictureTypeSelect?.value || "regular";
-        const persona = document.getElementById('persona-feature')?.value || "";
+    function toImageSrc(imageData) {
+        if (!imageData) {
+            return '';
+        }
+        if (imageData.startsWith('data:image')
+            || imageData.startsWith('/uploads/')
+            || imageData.startsWith('/images/')
+            || imageData.startsWith('http://')
+            || imageData.startsWith('https://')) {
+            return imageData;
+        }
+        return `data:image/png;base64,${imageData}`;
+    }
+
+    generateButton.addEventListener('click', async () => {
+        const journalText = document.getElementById('journal-content')?.value;
+        const selectedStyle = document.getElementById('selected-style')?.value || 'realistic';
+        const contextImages = Array.isArray(window.userContextImages) ? window.userContextImages : [];
+        const visualMemoryAnswer = typeof window.collectEntryData === 'function'
+                ? (window.collectEntryData().reflectionPrompts || []).find((prompt) => prompt.kind === 'VISUAL_MEMORY')?.answer || ''
+                : '';
 
         if (!journalText) {
-            alert('Please write something in the journal first.');
+            alert(msg('writeFirstAlert', 'Please write something in the journal first.'));
             return;
         }
 
-        if (pictureType === "none") {
-            alert("You selected 'No picture'. Change the option to generate an image.");
-            return;
-        }
+        const feedbackPromise = typeof window.generateJournalFeedback === 'function'
+                ? window.generateJournalFeedback({ quiet: true }).catch((error) => console.error('Feedback generation failed:', error))
+                : Promise.resolve();
 
-        // Show loading indicator and disable button
         loadingIndicator.style.display = 'block';
         generateButton.disabled = true;
 
         try {
-            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle, pictureType, persona);
+            const base64Image = await generateImageFromJournalEntry(journalText, selectedStyle, visualMemoryAnswer, contextImages);
+            const normalizedImage = toImageSrc(base64Image);
 
-            // Replace old current-image preview if exists
-            const oldImg = document.getElementById('current-image');
-            if (oldImg) {
-                oldImg.remove();
+            if (generatedImage) {
+                generatedImage.src = normalizedImage;
+                generatedImage.style.display = 'block';
+            }
+            if (generatedImageContainer) {
+                generatedImageContainer.style.display = 'grid';
             }
 
-            // Show the new generated image
-            generatedImage.src = `data:image/png;base64,${base64Image}`;
-            generatedImage.style.display = 'block';
-            generatedImageContainer.style.display = 'block';
-
-            // Store raw base64 in hidden inputs for later form submission
             if (imageUrlsJsonInput) {
                 let current = [];
                 try {
                     current = JSON.parse(imageUrlsJsonInput.value || '[]');
-                } catch (e) {
+                } catch (error) {
                     current = [];
                 }
-                if (!current.includes(base64Image)) {
-                    current.unshift(base64Image);
+
+                if (!current.includes(normalizedImage)) {
+                    current.unshift(normalizedImage);
                 }
-                if (Array.isArray(window.selectedImages) && !window.selectedImages.includes(base64Image)) {
-                    window.selectedImages.unshift(base64Image);
+                if (Array.isArray(window.selectedImages) && !window.selectedImages.includes(normalizedImage)) {
+                    window.selectedImages.unshift(normalizedImage);
                 }
                 imageUrlsJsonInput.value = JSON.stringify(current);
             }
+
+            if (imageUrlInput) {
+                imageUrlInput.value = normalizedImage;
+            }
+
+            if (typeof window.refreshJournalImages === 'function') {
+                window.refreshJournalImages();
+            }
         } catch (error) {
             console.error(error);
-            alert('Failed to generate image. Please try again.');
+            alert(error.message || msg('imageError', 'Failed to generate image. Please try again.'));
         } finally {
             loadingIndicator.style.display = 'none';
             generateButton.disabled = false;
@@ -101,24 +92,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Function to call backend API
-async function generateImageFromJournalEntry(text, style, pictureType, persona) {
+async function generateImageFromJournalEntry(text, style, visualMemoryAnswer, contextImages) {
     const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             journalText: text,
-            style: style,
-            pictureType: pictureType,
-            persona: persona
+            style,
+            visualMemoryAnswer,
+            contextImages
         })
     });
 
     if (response.ok) {
         const jsonResponse = await response.json();
-        return jsonResponse.base64Image; // Extract raw Base64 image string
-    } else {
-        console.error('Error generating image:', await response.text());
-        throw new Error('Image generation failed');
+        return jsonResponse.base64Image;
+    }
+
+    const raw = await response.text();
+    console.error('Error generating image:', raw);
+    try {
+        const json = JSON.parse(raw);
+        throw new Error(json.error || 'Image generation failed');
+    } catch (error) {
+        if (error instanceof SyntaxError) {
+            throw new Error(raw || 'Image generation failed');
+        }
+        throw error;
     }
 }

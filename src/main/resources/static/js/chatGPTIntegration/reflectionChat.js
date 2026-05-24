@@ -13,18 +13,19 @@ async function sendReflection(entryId, text) {
 }
 
 document.getElementById('reply-button').addEventListener('click', async () => {
+    const i18n = window.reflectionI18n || {};
     const entryId = document.getElementById('entryId').value;
     const input = document.getElementById('reflection-input');
     const text = input.value.trim();
     if (!text) return;
     try {
-        addMessage('You', text);
+        addMessage(i18n.userLabel || 'You', text);
         input.value = '';
         const reply = await sendReflection(entryId, text);
-        addMessage('AI', reply);
+        addMessage(i18n.assistantLabel || 'AI', reply);
     } catch (e) {
         console.error(e);
-        alert('Failed to send message');
+        alert(e.message || i18n.sendError || 'Failed to send message');
     }
 });
 

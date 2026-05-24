@@ -1,54 +1,51 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${community.name} + ' - Journal Entries'">Community Name</title>
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <title th:text="#{community.pageTitle(${community.name})}">Community</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
     <link rel="stylesheet" th:href="@{/css/community/community.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <section class="community-details-container">
+        <div class="community-header">
+            <h1 th:text="${community.name}">Community Name</h1>
+            <p th:text="${community.description}">Community description goes here.</p>
+        </div>
+    </section>
 
-<section class="community-details-container">
-    <div class="community-header">
-        <h1 th:text="${community.name}">Community Name</h1>
-        <p th:text="${community.description}">Community description goes here.</p>
-    </div>
-</section>
+    <section class="journal-entries-container">
+        <h2 th:text="#{community.recentEntries}">Recent journal entries</h2>
+        <div class="journal-entries-list">
+            <ul>
+                <li th:each="entry : ${entries}" class="journal-entry">
+                    <div class="story-item">
+                        <img th:src="${entry.thumbnailUrl}"
+                             class="journal-image"
+                             th:alt="#{common.imageAlt.generated}"
+                             th:if="${entry.hasThumbnail}"/>
 
-<section class="journal-entries-container">
-    <h2>Recent Journal Entries</h2>
-    <div class="journal-entries-list">
-        <ul>
-            <!-- Loop through the list of journal entries -->
-            <li th:each="entry : ${entries}" class="journal-entry">
-                <div class="story-item">
-                    <!-- Fixed: use imageUrl instead of image -->
-                    <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
-                         class="journal-image"
-                         alt="Generated Image"
-                         th:if="${entry.imageUrl}"/>
+                        <div id="story-content">
+                            <h3 th:text="${entry.title}" class="journal-title"></h3>
+                            <h4>
+                                <a th:href="@{'/profile/' + ${entry.username}}"
+                                   th:text="${entry.username}"
+                                   class="journal-username"></a>
+                            </h4>
 
-                    <div id="story-content">
-                        <h3 th:text="${entry.title}" class="journal-title"></h3>
-
-                        <!-- clickable link which leads to the userProfile page-->
-                        <h4>
-                            <a th:href="@{'/profile/' + ${entry.user.username}}"
-                               th:text="${entry.user.username}"
-                               class="journal-username"></a>
-                        </h4>
-
-                        <p th:text="${entry.content}" class="journal-text"></p>
-                        <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
-                               class="journal-timestamp"></small>
+                            <p th:text="${entry.excerpt}" class="journal-text"></p>
+                            <small th:text="#{community.postedOn(${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')})}"
+                                   class="journal-timestamp">Posted on: 27-02-2026 18:30</small>
+                        </div>
                     </div>
-                </div>
-            </li>
-        </ul>
-    </div>
-</section>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
 </body>
 </html>

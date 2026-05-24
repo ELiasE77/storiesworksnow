@@ -1,50 +1,158 @@
 const speechToTextBtn = document.getElementById('speechToTextBtn');
-const journalContent = document.getElementById('journal-content');
+const targetFieldId = speechToTextBtn?.dataset?.target || 'journal-content';
+const transcriptFieldId = speechToTextBtn?.dataset?.transcriptTarget || targetFieldId;
+const audioTargetId = speechToTextBtn?.dataset?.audioTarget || '';
+const shouldRecordAudio = speechToTextBtn?.dataset?.recordAudio === 'true';
+const journalContent = document.getElementById(targetFieldId);
+const transcriptField = document.getElementById(transcriptFieldId);
+const audioDataField = audioTargetId ? document.getElementById(audioTargetId) : null;
 const speechIndicator = document.getElementById('speechIndicator');
+const voicePlayback = document.getElementById('voiceMemoPlayback');
+const speechI18n = window.journallyI18n || {};
+const speechMsg = (key, fallback) => speechI18n[key] || fallback;
 
-// Check if the browser supports Speech Recognition
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (SpeechRecognition) {
-    const recognition = new SpeechRecognition();
+const canRecordAudio = Boolean(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
 
-    recognition.continuous = true; // Stop recognition after one result
-    recognition.interimResults = false; // We want final results only
+if (SpeechRecognition && speechToTextBtn && journalContent && speechIndicator) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
     let isListening = false;
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let baseText = '';
+    let finalTranscript = '';
+
+    function joinTranscript(base, liveText) {
+        const normalizedBase = base.trimEnd();
+        const normalizedLive = liveText.trimStart();
+        if (!normalizedBase) {
+            return normalizedLive;
+        }
+        if (!normalizedLive) {
+            return normalizedBase;
+        }
+        return `${normalizedBase} ${normalizedLive}`;
+    }
+
+    function syncTranscript(value) {
+        if (transcriptField && transcriptField !== journalContent) {
+            transcriptField.value = value;
+        }
+        journalContent.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    async function startRecording() {
+        if (!shouldRecordAudio || !canRecordAudio) {
+            return;
+        }
+
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const preferredType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : 'audio/webm';
+        mediaRecorder = new MediaRecorder(mediaStream, { mimeType: preferredType });
+        audioChunks = [];
+
+        mediaRecorder.addEventListener('dataavailable', (event) => {
+            if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+            }
+        });
+
+        mediaRecorder.addEventListener('stop', () => {
+            const mimeType = mediaRecorder?.mimeType || 'audio/webm';
+            const blob = new Blob(audioChunks, { type: mimeType });
+            if (voicePlayback && blob.size > 0) {
+                voicePlayback.src = URL.createObjectURL(blob);
+                voicePlayback.hidden = false;
+            }
+            if (audioDataField && blob.size > 0) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    audioDataField.value = (reader.result || '').toString();
+                };
+                reader.readAsDataURL(blob);
+            }
+            mediaStream?.getTracks().forEach((track) => track.stop());
+            mediaStream = null;
+            mediaRecorder = null;
+        });
+
+        mediaRecorder.start();
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        } else {
+            mediaStream?.getTracks().forEach((track) => track.stop());
+            mediaStream = null;
+        }
+    }
 
     recognition.onstart = () => {
-        speechIndicator.style.display = 'block'; // Show listening indicator
-        isListening = true; // Set listening status to true
-        speechToTextBtn.textContent = 'Stop Listening'; // Change button text
+        speechIndicator.style.display = 'block';
+        isListening = true;
+        baseText = journalContent.value || '';
+        finalTranscript = '';
+        speechToTextBtn.textContent = speechMsg('speechStop', 'Stop listening');
     };
 
     recognition.onresult = (event) => {
-        const transcript = event.results[event.resultIndex][0].transcript; // Get the recognized text
-        journalContent.value += transcript; // Append it to the textarea
+        let interimTranscript = '';
+        for (let index = event.resultIndex; index < event.results.length; index++) {
+            const transcript = event.results[index][0].transcript;
+            if (event.results[index].isFinal) {
+                finalTranscript += `${transcript} `;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        const liveText = `${finalTranscript}${interimTranscript}`.trim();
+        journalContent.value = joinTranscript(baseText, liveText);
+        syncTranscript(journalContent.value);
     };
 
     recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
-        speechIndicator.style.display = 'none'; // Hide the indicator on error
+        stopRecording();
+        speechIndicator.style.display = 'none';
         isListening = false;
-        speechToTextBtn.textContent = 'Start Speech-to-Text'; // Reset button text
-
+        speechToTextBtn.textContent = speechMsg('speechStart', 'Start speech-to-text');
     };
 
     recognition.onend = () => {
-        speechIndicator.style.display = 'none'; // Hide the indicator when recognition ends
-        isListening = false; // Set listening status to false
-        speechToTextBtn.textContent = 'Start Speech-to-Text'; // Reset button text
+        stopRecording();
+        speechIndicator.style.display = 'none';
+        isListening = false;
+        speechToTextBtn.textContent = speechMsg('speechStart', 'Start speech-to-text');
+        syncTranscript(journalContent.value || '');
     };
 
-    // Toggle start/stop of recognition
-    speechToTextBtn.addEventListener('click', () => {
+    speechToTextBtn.addEventListener('click', async () => {
         if (isListening) {
-            recognition.stop(); // Stop recognition if it’s currently active
-        } else {
-            recognition.start(); // Start recognition if it’s currently inactive
+            recognition.stop();
+            return;
+        }
+
+        try {
+            await startRecording();
+            recognition.start();
+        } catch (error) {
+            console.error('Could not start audio recording:', error);
+            stopRecording();
+            recognition.start();
         }
     });
 } else {
     console.warn('Speech Recognition is not supported in this browser.');
-    speechToTextBtn.disabled = true; // Disable the button if not supported
+    if (speechToTextBtn) {
+        speechToTextBtn.disabled = true;
+        speechToTextBtn.textContent = speechMsg('speechUnsupported', 'Speech recognition unavailable');
+    }
 }

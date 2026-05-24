@@ -50,10 +50,17 @@ public class Profile {
     @Column(name = "appearance_json", columnDefinition = "LONGTEXT")
     private String appearanceJson;
 
+    @Column(name = "companion_key")
+    private String companionKey;
+
     /** The AI-generated persona feature (10–500 words). */
     @Lob
     @Column(name = "persona_feature", columnDefinition = "LONGTEXT")
     private String personaFeature;
+
+    @Lob
+    @Column(name = "visual_memory_json", columnDefinition = "LONGTEXT")
+    private String visualMemoryJson;
 
     // ——— Constructors ———
 
@@ -102,9 +109,15 @@ public class Profile {
     public String getPersonaFeature() { return personaFeature; }
     public void setPersonaFeature(String personaFeature) { this.personaFeature = personaFeature; }
 
+    public String getVisualMemoryJson() { return visualMemoryJson; }
+    public void setVisualMemoryJson(String visualMemoryJson) { this.visualMemoryJson = visualMemoryJson; }
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public String getAppearanceJson() { return appearanceJson; }
     public void setAppearanceJson(String appearanceJson) { this.appearanceJson = appearanceJson; }
+
+    public String getCompanionKey() { return companionKey; }
+    public void setCompanionKey(String companionKey) { this.companionKey = companionKey; }
 }

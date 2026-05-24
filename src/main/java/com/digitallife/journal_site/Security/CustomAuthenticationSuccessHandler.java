@@ -29,6 +29,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         if (user != null) {
             request.getSession().setAttribute("currentUserId", user.getId());
         }
-        response.sendRedirect("/journal/home");
+        response.sendRedirect("/");
     }
 }

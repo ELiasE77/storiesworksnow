@@ -1,97 +1,181 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title th:text="${user != null ? user.username + ' | Profile' : 'Profile'}">Profile</title>
-  <link rel="stylesheet" th:href="@{/css/user/userProfile.css}">
-  <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:if="${user != null}" th:text="#{profile.pageTitle.withName(${user.username})}">Journally Profile</title>
+    <title th:unless="${user != null}" th:text="#{profile.pageTitle}">Journally Profile</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<!-- navbar -->
-<div th:replace="~{navbar :: navbar(currentUsername=${currentUsername})}"></div>
+    <section class="hero-card card">
+        <div class="profile-hero">
+            <div th:if="${profile != null && profile.imageUrl != null}">
+                <img class="profile-avatar" th:src="${profile.imageUrl}" th:alt="#{profile.imageAlt}">
+            </div>
+            <div th:if="${profile == null || profile.imageUrl == null}" class="profile-avatar"
+                 th:text="${(profile != null && profile.name != null && !#strings.isEmpty(profile.name)) ? #strings.substring(profile.name,0,1).toUpperCase() : #strings.substring(user.username,0,1).toUpperCase()}">M</div>
+            <div>
+                <div class="companion-pill">
+                    <span class="companion-dot"></span>
+                    <span th:text="#{profile.themeLabel(${@siteText.companionName(activeCompanion.key(), #locale)})}">Sol theme</span>
+                </div>
+                <h1 th:text="${profile != null && profile.name != null ? profile.name : user.username}">Maja R.</h1>
+                <p th:text="${@siteText.companionDescription(activeCompanion.key(), #locale)}">Warm, optimistic, and great for gentle momentum.</p>
+                <div class="button-row" style="margin-top: 18px;" th:if="${user.username == currentUsername}">
+                    <a class="button" th:href="@{/profile/questionnaire}" th:text="#{profile.editProfile}">Edit profile</a>
+                    <a class="ghost-button" th:href="@{/companions}" th:text="#{profile.chooseCompanion}">Choose companion</a>
+                    <a class="ghost-button" th:href="@{/profile/feature}" th:text="#{profile.personaButton}">Persona text</a>
+                </div>
+                <div class="button-row" style="margin-top: 18px;" th:if="${user.username != currentUsername}">
+                    <button class="button"
+                            id="follow-btn"
+                            th:data-username="${user.username}"
+                            th:data-following="${isFollowing}"
+                            th:text="${isFollowing} ? #{profile.unfollow} : #{profile.follow}">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<div class="profile-container">
-  <!-- Header -->
-  <div class="profile-header">
-    <div class="profile-picture">
-      <img th:src="${profile != null && profile.imageUrl != null ? profile.imageUrl : '/images/default-profile.jpg'}" alt="Profile Picture">
-    </div>
-    <div class="profile-info">
-      <h2 th:text="${profile != null && profile.name != null ? profile.name : user.username}">Username</h2>
-      <p>Role: <span th:text="${user.role}">User Role</span></p>
-      <div class="follower-info" th:if="${user.username != currentUsername}">
-        <p><strong th:text="${user.followers.size()}">0</strong> Followers</p>
-        <p><strong th:text="${user.following.size()}">0</strong> Following</p>
-      </div>
-    </div>
-    <div class="profile-actions" th:if="${user.username != currentUsername}">
-      <button id="follow-btn"
-              th:data-username="${user.username}"
-              th:text="${isFollowing} ? 'Unfollow' : 'Follow'">
-      </button>
-    </div>
-    <div class="profile-actions" th:if="${user.username == currentUsername}">
-      <a class="btn-edit" th:href="@{/profile/questionnaire}">Edit Profile</a>
-      <a class="btn-edit" th:href="@{/profile/feature}" style="margin-left:0.5rem;">Edit Persona Feature</a>
-    </div>
-  </div>
+    <section class="profile-grid" style="margin-top: 18px;">
+        <article class="profile-card">
+            <span class="micro-label" th:text="#{profile.weeklyOverview}">Weekly overview</span>
+            <h3 th:text="#{profile.rhythm}">Your rhythm</h3>
+            <div class="week-strip">
+                <div class="week-day" th:each="day : ${weeklyActivity}">
+                    <span th:text="${day.label}">Mo</span>
+                    <div class="week-dot" th:classappend="${day.count > 0} ? ' active'"></div>
+                    <strong th:text="${day.count}">1</strong>
+                </div>
+            </div>
 
-  <!-- Profile Details -->
-  <section class="profile-details">
-    <h3>Profile Details</h3>
+            <div class="sentiment-panel">
+                <div class="section-header" style="margin-bottom: 12px;">
+                    <div>
+                        <span class="micro-label" th:text="#{profile.sentimentWeek}">Mood this week</span>
+                        <p th:text="#{profile.sentimentWeekDescription}">Likert scale and AI reading per day.</p>
+                    </div>
+                </div>
+                <div class="sentiment-chart">
+                    <div class="sentiment-day" th:each="point : ${weeklySentiment}">
+                        <div class="sentiment-bars">
+                            <div class="sentiment-bar likert"
+                                 th:classappend="${!point.hasLikert} ? ' empty'"
+                                 th:style="'height:' + ${point.likertHeight} + '%'"></div>
+                            <div class="sentiment-bar ai"
+                                 th:classappend="${!point.hasAi} ? ' empty'"
+                                 th:style="'height:' + ${point.aiHeight} + '%'"></div>
+                        </div>
+                        <div class="sentiment-values">
+                            <span th:text="${point.likertDisplay}">4.0</span>
+                            <span th:text="${point.aiDisplay}">4.0</span>
+                        </div>
+                        <span class="micro-label" th:text="${point.label}">Mo</span>
+                    </div>
+                </div>
+                <div class="sentiment-legend">
+                    <span><i class="legend-dot likert"></i><span th:text="#{profile.likert}">Likert</span></span>
+                    <span><i class="legend-dot ai"></i><span th:text="#{profile.ai}">AI</span></span>
+                </div>
+            </div>
+        </article>
 
-    <!-- if profile exists -->
-    <dl th:if="${profile != null}">
-      <dt>Gender</dt>
-      <dd th:text="${profile.gender ?: '—'}">—</dd>
+        <article class="profile-card">
+            <span class="micro-label" th:text="#{profile.focusPoints}">Your focus points</span>
+            <h3 th:text="#{profile.themes}">Themes inspired by your entries</h3>
+            <div class="focus-bubbles" style="margin-top: 16px;" th:if="${!#maps.isEmpty(focusScores)}">
+                <div class="focus-bubble" th:each="score : ${focusScores}">
+                    <span class="micro-label" th:text="${@siteText.localizeFocusTag(score.key, #locale)}">Friends</span>
+                    <strong th:text="${score.value}">4</strong>
+                    <p th:text="#{profile.focusCountDescription}">Entries with this focus in your recent Journally history.</p>
+                </div>
+            </div>
+            <p th:if="${#maps.isEmpty(focusScores)}" class="muted-text" th:text="#{profile.focusEmpty}">
+                Once you save a few entries with emotions and topics, Journally will build your focus fields here.
+            </p>
+        </article>
 
-      <dt>Age</dt>
-      <dd th:text="${profile.age ?: '—'}">—</dd>
+        <article class="profile-card">
+            <span class="micro-label" th:text="#{profile.badges}">Badges</span>
+            <h3 th:text="#{profile.progress}">Your progress</h3>
+            <div class="badge-grid" style="margin-top: 16px;">
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{home.streak}">Streak</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${streakCount}">4</div>
+                </div>
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{profile.words}">Words</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${totalWords}">3872</div>
+                </div>
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{profile.images}">Images</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${totalImages}">12</div>
+                </div>
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{home.thisWeek}">This week</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${weeklyReflections}">4</div>
+                </div>
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{profile.entries}">Entries</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${entryCount}">20</div>
+                </div>
+                <div class="badge-card">
+                    <span class="micro-label" th:text="#{profile.companion}">Companion</span>
+                    <div class="metric-number" style="font-size:1.8rem;" th:text="${@siteText.companionName(activeCompanion.key(), #locale)}">Sol</div>
+                </div>
+            </div>
+        </article>
 
-      <dt>Height</dt>
-      <dd th:text="${profile.height ?: '—'}">—</dd>
+        <article class="profile-card">
+            <span class="micro-label" th:text="#{profile.persona}">Persona</span>
+            <h3 th:text="#{profile.context}">Your context</h3>
+            <p class="profile-copy"
+               th:text="${profile != null && profile.personaFeature != null && !#strings.isEmpty(profile.personaFeature)} ? ${profile.personaFeature} : #{profile.personaEmpty}">
+                Persona feature...
+            </p>
+            <div class="chip-list" style="margin-top: 14px;" th:if="${profile != null}">
+                <span class="chip is-accent" th:text="${profile.nationality}" th:if="${profile.nationality != null and !#strings.isEmpty(profile.nationality)}">Austria</span>
+                <span class="chip" th:text="${profile.hair}" th:if="${profile.hair != null and !#strings.isEmpty(profile.hair)}">Brown</span>
+                <span class="chip" th:text="${profile.height}" th:if="${profile.height != null and !#strings.isEmpty(profile.height)}">175 cm</span>
+            </div>
+        </article>
+    </section>
 
-      <dt>Nationality</dt>
-      <dd th:text="${profile.nationality ?: '—'}">—</dd>
+    <section style="margin-top: 18px;">
+        <div class="section-header">
+            <div>
+                <h2 style="margin:0;font-family:'Parkinsans',sans-serif;font-size:1.8rem;" th:text="#{profile.latestEntries}">Latest entries</h2>
+                <p th:text="#{profile.latestEntriesDescription}">Direct access to your newest Journally moments.</p>
+            </div>
+            <a class="ghost-button" th:href="@{/journal/home}" th:text="#{common.archive}">Archive</a>
+        </div>
+        <div class="archive-grid">
+            <article class="archive-card" th:each="entry : ${latestEntries}">
+                <div class="entry-meta-row">
+                    <div class="entry-date" th:text="${#temporals.format(entry.timestamp, 'dd. MMM yyyy')}">27 Feb 2026</div>
+                    <a class="ghost-button" th:href="@{/journal/entry(id=${entry.id})}" th:text="#{common.open}">Open</a>
+                </div>
+                <h3 th:text="${#strings.isEmpty(entry.title)} ? #{common.untitled} : ${entry.title}">Entry</h3>
+                <p class="excerpt" th:text="${entry.excerpt}">Summary...</p>
+            </article>
+        </div>
+    </section>
+</main>
 
-      <dt>Hair</dt>
-      <dd th:text="${profile.hair ?: '—'}">—</dd>
-
-      <dt>Hobbies</dt>
-      <dd th:text="${profile.hobbies ?: '—'}">—</dd>
-    </dl>
-
-    <!-- fallback for no profile -->
-    <p th:if="${profile == null}">
-      You haven’t filled out your profile questionnaire yet.
-      <a th:href="@{/profile/questionnaire}">Complete it now.</a>
-    </p>
-  </section>
-
-  <!-- Persona Overview -->
-  <section class="persona-section"
-           th:if="${profile != null and !#strings.isEmpty(profile.persona)}">
-    <h3>Persona Overview</h3>
-    <p th:text="${profile.persona}">Your persona description…</p>
-  </section>
-
-  <!-- AI-generated Persona Feature -->
-  <section class="persona-feature-section"
-           th:if="${profile != null and !#strings.isEmpty(profile.personaFeature)}">
-    <h3>Persona Feature</h3>
-    <p th:text="${profile.personaFeature}">Your persona feature…</p>
-  </section>
-
-  <!-- Appearance JSONL -->
-  <section class="appearance-json-section"
-           th:if="${profile != null and !#strings.isEmpty(profile.appearanceJson)}">
-    <h3>Appearance Data (JSONL)</h3>
-    <pre th:text="${profile.appearanceJson}"></pre>
-  </section>
-</div>
-
-<script th:src="@{/js/component/following.js}"></script>
+<script th:inline="javascript">
+    window.followI18n = {
+        follow: [[#{profile.follow}]],
+        unfollow: [[#{profile.unfollow}]],
+        followSuccess: [[#{profile.followSuccess}]],
+        unfollowSuccess: [[#{profile.unfollowSuccess}]],
+        toggleError: [[#{profile.followToggleError}]]
+    };
+</script>
+<script th:if="${user.username != currentUsername}" th:src="@{/js/component/following.js}"></script>
 </body>
 </html>

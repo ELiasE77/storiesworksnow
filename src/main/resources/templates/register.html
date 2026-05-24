@@ -1,94 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Register – Stories</title>
-
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --primary: #5A67D8;
-            --accent: #667EEA;
-            --bg-start: #EDF2F7;
-            --bg-end: #E2E8F0;
-            --card-bg: #ffffff;
-            --text: #2D3748;
-            --text-light: #718096;
-        }
-        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
-            display: flex; align-items: center; justify-content: center;
-            color: var(--text);
-        }
-        .card {
-            background: var(--card-bg);
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 2rem;
-            width: 100%; max-width: 400px;
-        }
-        header { text-align: center; margin-bottom: 1rem; }
-        header h1 { font-size: 2.5rem; font-weight: 700; color: var(--primary); }
-        .text-sm { font-size: 0.875rem; color: var(--text-light); text-align: center; margin-top: 0.75rem; }
-        .text-sm a { color: var(--primary); text-decoration: none; font-weight: 500; }
-        .text-sm a:hover { text-decoration: underline; }
-        .form-group { margin-bottom: 1.25rem; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
-        input[type="text"], input[type="password"] {
-            width: 100%; padding: 0.75rem;
-            border: 1px solid #CBD5E0; border-radius: 0.5rem;
-            font-size: 1rem; color: var(--text);
-        }
-        input:focus {
-            outline: none; border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
-        }
-        .btn {
-            display: block; width: 100%; padding: 0.75rem;
-            background: var(--primary); color: #fff;
-            font-size: 1rem; font-weight: 500; border: none;
-            border-radius: 0.5rem; cursor: pointer; transition: background 0.2s;
-        }
-        .btn:hover { background: var(--accent); }
-        .error {
-            color: #E53E3E;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-    </style>
+    <title th:text="#{register.pageTitle}">Register | Journally</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
-<div class="card">
-    <header>
-        <h1>Stories</h1>
-        <p class="text-sm">Join us and start your journey.</p>
-    </header>
+<body class="auth-body" data-theme="sol">
+<main class="auth-shell">
+    <div class="auth-topbar">
+        <div th:replace="~{navbar :: languageSwitcher}"></div>
+    </div>
 
-    <form th:action="@{/register}" th:object="${userDto}" method="post">
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" th:field="*{username}" placeholder="Choose a username" required/>
-            <div class="error" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+    <section class="auth-card">
+        <div class="auth-hero">
+            <div class="brand-wordmark" aria-label="Journally">
+                <span class="dark">journ</span><span class="accent">ally</span>
+            </div>
+            <h1 th:text="#{register.heading}">Start with Journally</h1>
+            <p th:text="#{register.subheading}">Create your account and set up your personal reflection profile in the next step.</p>
         </div>
 
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" th:field="*{password}" placeholder="Create a password" required/>
-            <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
-        </div>
+        <form th:action="@{/register}" th:object="${userDto}" method="post" class="auth-form">
+            <div class="error-text" th:if="${registrationError}" th:text="${registrationError}"></div>
 
-        <button class="btn" type="submit">Create Account</button>
-    </form>
+            <div>
+                <label class="form-label" for="username" th:text="#{auth.username}">Username</label>
+                <input type="text" id="username" th:field="*{username}" th:placeholder="#{register.usernamePlaceholder}" required/>
+                <div class="error-text" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+            </div>
 
-    <p class="text-sm">
-        Already have an account?
-        <a th:href="@{/login}">Login here</a>
-    </p>
-</div>
+            <div>
+                <label class="form-label" for="password" th:text="#{auth.password}">Password</label>
+                <input type="password" id="password" th:field="*{password}" th:placeholder="#{register.passwordPlaceholder}" required/>
+                <div class="error-text" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+
+            <button class="button" type="submit" th:text="#{register.submit}">Create account</button>
+        </form>
+
+        <p class="muted-text" style="margin-top: 16px;">
+            <span th:text="#{register.haveAccount}">Already with us?</span>
+            <a th:href="@{/login}" style="color:var(--accent-strong);font-weight:800;" th:text="#{register.loginLink}">Go to login</a>
+        </p>
+    </section>
+</main>
 </body>
 </html>

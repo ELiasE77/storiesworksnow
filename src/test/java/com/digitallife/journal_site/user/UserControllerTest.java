@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -79,11 +80,8 @@ class UserControllerTest {
 
         // Perform a GET request to /profile
         mockMvc.perform(get("/user/profile").principal(authentication))
-                .andExpect(status().isOk()) // Check that the status is 200 OK
-                .andExpect(view().name("user/userProfile")) // Check that the correct view is returned
-                .andExpect(model().attribute("isFollowing", true)) // Check the model attributes passed in the method
-                .andExpect(model().attribute("user", mockUser)) // Check that the user is added to the model
-                .andExpect(model().attribute("currentUsername", "testuser")); // Check that the user is added to the model
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/profile/testuser"));
     }
 
     @Test
@@ -105,11 +103,8 @@ class UserControllerTest {
         when(userDetailService.findByUsername("testuser")).thenReturn(mockUser);
 
         mockMvc.perform(get("/user/testuser").principal(authentication))
-                .andExpect(status().isOk()) // Check that the status is 200 OK
-                .andExpect(view().name("user/userProfile")) // Check that the correct view is returned
-                .andExpect(model().attribute("isFollowing", false)) // Check the model attributes passed in the method
-                .andExpect(model().attribute("user", mockUser)) // Check that the user is added to the model
-                .andExpect(model().attribute("currentUsername", "testuser")); // Check that the user is added to the model
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/profile/testuser"));
     }
 
     @Test

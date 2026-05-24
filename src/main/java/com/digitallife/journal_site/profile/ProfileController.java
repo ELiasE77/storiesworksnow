@@ -1,7 +1,12 @@
 package com.digitallife.journal_site.profile;
 
+import com.digitallife.journal_site.Journal.JournalEntryListItem;
+import com.digitallife.journal_site.Journal.JournalInsightItem;
+import com.digitallife.journal_site.Journal.JournalInsightsService;
+import com.digitallife.journal_site.Journal.JournalService;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +16,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/profile")
 public class ProfileController {
@@ -18,13 +31,19 @@ public class ProfileController {
     private final ProfileRepository profileRepo;
     private final UserDetailService userDetailService;
     private final PersonaService personaService;
+    private final JournalService journalService;
+    private final JournalInsightsService journalInsightsService;
 
     public ProfileController(ProfileRepository profileRepo,
                              UserDetailService uds,
-                             PersonaService personaService) {
+                             PersonaService personaService,
+                             JournalService journalService,
+                             JournalInsightsService journalInsightsService) {
         this.profileRepo       = profileRepo;
         this.userDetailService = uds;
         this.personaService    = personaService;
+        this.journalService = journalService;
+        this.journalInsightsService = journalInsightsService;
     }
 
     /**
@@ -60,6 +79,7 @@ public class ProfileController {
                 .findByUserId(userId)
                 .orElse(new Profile());
         model.addAttribute("profile", existing);
+        model.addAttribute("companionOptions", CompanionCatalog.all());
         return "questionnaire";
     }
 
@@ -94,6 +114,7 @@ public class ProfileController {
         p.setHair(formData.getHair());
         p.setHobbies(formData.getHobbies());
         p.setPersona(formData.getPersona());
+        p.setCompanionKey(CompanionCatalog.find(formData.getCompanionKey()).key());
 
         if (profileImage != null && !profileImage.isEmpty()) {
             try {
@@ -141,6 +162,7 @@ public class ProfileController {
 
         model.addAttribute("profile", profile);
         model.addAttribute("currentUsername", userDetailService.findById(userId).getUsername());
+        model.addAttribute("companionOptions", CompanionCatalog.all());
         return "profile/editFeature";
     }
 
@@ -172,7 +194,8 @@ public class ProfileController {
     public String viewProfile(
             @PathVariable String username,
             HttpSession session,
-            Model model
+            Model model,
+            Locale locale
     ) {
         // Fetch profile if it exists
         Profile profile = profileRepo
@@ -208,7 +231,45 @@ public class ProfileController {
                 && current.getFollowing().stream()
                 .anyMatch(u -> u.getId().equals(user.getId()));
         model.addAttribute("isFollowing", isFollowing);
+        List<JournalInsightItem> insights = journalService.findInsightItems(user);
+        List<LocalDateTime> timestamps = insights.stream()
+                .map(JournalInsightItem::getTimestamp)
+                .toList();
+        List<JournalEntryListItem> latestEntries = journalService.findRecentEntryItems(user, PageRequest.of(0, 3));
+
+        model.addAttribute("latestEntries", latestEntries);
+        model.addAttribute("entryCount", journalService.countEntriesByUser(user));
+        model.addAttribute("weeklyActivity", toWeekCards(journalInsightsService.buildWeeklyActivityFromTimestamps(timestamps), locale));
+        model.addAttribute("focusScores", journalInsightsService.buildFocusScoresFromInsights(insights));
+        model.addAttribute("streakCount", journalInsightsService.calculateCurrentStreakFromTimestamps(timestamps));
+        model.addAttribute("weeklyReflections", journalInsightsService.countTimestampsThisWeek(timestamps));
+        model.addAttribute("totalWords", journalInsightsService.countWordsFromInsights(insights));
+        model.addAttribute("totalImages", journalInsightsService.countImagesFromInsights(insights));
+        model.addAttribute("weeklySentiment", journalInsightsService.buildWeeklySentimentFromInsights(insights, locale));
+        model.addAttribute("activeCompanion", CompanionCatalog.find(profile == null ? null : profile.getCompanionKey()));
+        model.addAttribute("companionOptions", CompanionCatalog.all());
 
         return "user/userProfile";
+    }
+
+    private List<Map<String, Object>> toWeekCards(Map<DayOfWeek, Integer> weeklyActivity, Locale locale) {
+        List<Map<String, Object>> cards = new ArrayList<>();
+        DayOfWeek[] orderedDays = {
+                DayOfWeek.MONDAY,
+                DayOfWeek.TUESDAY,
+                DayOfWeek.WEDNESDAY,
+                DayOfWeek.THURSDAY,
+                DayOfWeek.FRIDAY,
+                DayOfWeek.SATURDAY,
+                DayOfWeek.SUNDAY
+        };
+
+        for (DayOfWeek dayOfWeek : orderedDays) {
+            cards.add(Map.of(
+                    "label", dayOfWeek.getDisplayName(TextStyle.SHORT, locale).replace(".", ""),
+                    "count", weeklyActivity.getOrDefault(dayOfWeek, 0)
+            ));
+        }
+        return cards;
     }
 }

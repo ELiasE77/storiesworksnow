@@ -93,6 +93,13 @@ public class CommunityService {
         return communityRepository.findByUsername(username);
     }
 
+    public List<CommunitySummary> findCommunitySummariesByUsername(String username) {
+        return communityRepository.findSummariesByUsername(username)
+                .stream()
+                .map(CommunitySummary::from)
+                .toList();
+    }
+
     /**
      * finds all communities in the database
      * TODO limit the number of communities passed and implement a scroll and search function in the html page (better for performance in case of large database)
@@ -101,6 +108,13 @@ public class CommunityService {
      */
     public List<Community> findAll() {
         return communityRepository.findAll();
+    }
+
+    public List<CommunitySummary> findAllSummaries() {
+        return communityRepository.findAllSummaries()
+                .stream()
+                .map(CommunitySummary::from)
+                .toList();
     }
 
     public Community findByID(Long communityId) {

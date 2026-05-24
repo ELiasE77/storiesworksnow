@@ -1,46 +1,42 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
-    <title>Social Journal Page</title>
+    <title th:text="#{social.pageTitle}">Social journal page</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
     <link rel="stylesheet" th:href="@{/css/social/social_janneke.css}">
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <header>
+        <h1 th:text="#{social.heading}">Social journal page</h1>
+    </header>
 
-<header>
-    <h1>Social Journal Page</h1>
-</header>
-
-<main>
     <section class="story-gallery">
-        <h2 id="h2">Recent Journal Entries</h2>
+        <h2 id="h2" th:text="#{social.recentEntries}">Recent journal entries</h2>
         <div class="entry-list">
             <ul>
-                <!-- Loop through each journal entry in the 'entries' attribute -->
                 <li th:each="entry : ${entries}" class="journal-entry">
                     <div class="story-item">
-                        <div th:if="${entry.imageUrl}">
-                            <img th:src="'data:image/png;base64,' + ${entry.imageUrl}"
+                        <div th:if="${entry.hasThumbnail}">
+                            <img th:src="${entry.thumbnailUrl}"
                                  class="journal-image"
-                                 alt="Generated Image"/>
+                                 th:alt="#{common.imageAlt.generated}"/>
                         </div>
 
                         <div id="story-content">
                             <h3 th:text="${entry.title}" class="journal-title"></h3>
-
-                            <!-- clickable link which leads to the userProfile page -->
                             <h4>
-                                <a th:href="@{'/profile/' + ${entry.user.username}}"
-                                   th:text="${entry.user.username}"
+                                <a th:href="@{'/profile/' + ${entry.username}}"
+                                   th:text="${entry.username}"
                                    class="journal-username"></a>
                             </h4>
 
-                            <p th:text="${entry.content}" class="journal-text"></p>
-                            <small th:text="'Posted on: ' + ${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}"
-                                   class="journal-timestamp"></small>
+                            <p th:text="${entry.excerpt}" class="journal-text"></p>
+                            <small th:text="#{community.postedOn(${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')})}"
+                                   class="journal-timestamp">Posted on: 27-02-2026 18:30</small>
                         </div>
                     </div>
                 </li>
@@ -48,6 +44,5 @@
         </div>
     </section>
 </main>
-
 </body>
 </html>

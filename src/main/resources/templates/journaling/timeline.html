@@ -1,67 +1,62 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal Image Timeline</title>
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <title th:text="#{timeline.pageTitle}">Journal image timeline</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
     <link rel="stylesheet" th:href="@{/css/journaling/timeline.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <section class="timeline-container">
+        <h1 th:text="#{timeline.heading}">My journal image timeline</h1>
 
-<section class="timeline-container">
-    <h1>My Journal Image Timeline</h1>
+        <form action="/journal/timeline" method="get">
+            <label for="month" th:text="#{timeline.selectMonth}">Select month</label>
+            <select name="month" id="month" required>
+                <option th:each="entry : ${availableMonthsAndYears}"
+                        th:value="${entry[0]}"
+                        th:text="${#temporals.format(#temporals.create(entry[1], entry[0], 1), 'MMMM yyyy')}"
+                        th:selected="${entry[0] == selectedMonth and entry[1] == selectedYear}">
+                </option>
+            </select>
 
-    <!-- Dropdown for selecting month and year -->
-    <form action="/journal/timeline" method="get">
-        <label for="month">Select Month:</label>
-        <select name="month" id="month" required>
-            <option th:each="entry : ${availableMonthsAndYears}"
-                    th:value="${entry[0]}"
-                    th:text="${#temporals.format(#temporals.create(entry[1], entry[0], 1), 'MMMM yyyy')}"
-                    th:selected="${entry[0] == selectedMonth and entry[1] == selectedYear}">
-            </option>
-        </select>
+            <input type="hidden" name="year" th:value="${selectedYear}">
+            <button type="submit" th:text="#{timeline.filter}">Filter</button>
+        </form>
 
-        <input type="hidden" name="year" th:value="${selectedYear}">
-        <button type="submit">Filter</button>
-    </form>
+        <div class="scroll-buttons">
+            <button id="scroll-left" class="scroll-btn" th:attr="aria-label=#{timeline.scrollLeft}">←</button>
+            <button id="scroll-right" class="scroll-btn" th:attr="aria-label=#{timeline.scrollRight}">→</button>
+        </div>
 
-    <!-- Scroll buttons for navigating the timeline -->
-    <div class="scroll-buttons">
-        <button id="scroll-left" class="scroll-btn">←</button>
-        <button id="scroll-right" class="scroll-btn">→</button>
-    </div>
+        <div class="timeline">
+            <ul>
+                <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
+                    <p th:text="#{timeline.empty}">You have not written any entries with pictures yet.</p>
+                </li>
 
-    <!-- Timeline display for journal entries -->
-    <div class="timeline">
-        <ul>
-            <!-- No-entries message -->
-            <li th:if="${#lists.isEmpty(entries)}" class="no-entries-message">
-                <p>You have not written any entries with pictures yet!</p>
-            </li>
-
-            <!-- Loop through each journal entry with an image -->
-            <li th:each="entry : ${entries}">
-                <div class="timeline-item">
-                    <div class="timestamp">
-                        <p th:text="${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}">Date</p>
+                <li th:each="entry : ${entries}">
+                    <div class="timeline-item">
+                        <div class="timestamp">
+                            <p th:text="${#temporals.format(entry.timestamp, 'dd-MM-yyyy HH:mm')}">Date</p>
+                        </div>
+                        <div class="timeline-content">
+                            <h3 th:text="${entry.title}">Journal entry title</h3>
+                            <img th:if="${entry.imageUrl}"
+                                 th:src="${entry.displayImageUrl}"
+                                 th:alt="#{common.imageAlt.journal}" />
+                        </div>
                     </div>
-                    <div class="timeline-content">
-                        <h3 th:text="${entry.title}">Journal Entry Title</h3>
-                        <img th:if="${entry.imageUrl}"
-                             th:src="'data:image/png;base64,' + ${entry.imageUrl}"
-                             alt="Journal Entry Image" />
-                    </div>
-                </div>
-            </li>
-        </ul>
-    </div>
-</section>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
 
 <script th:src="@{/js/component/timelineSmoothScroll.js}"></script>
-
 </body>
 </html>

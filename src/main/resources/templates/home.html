@@ -1,87 +1,133 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Life</title>
-    <link rel="stylesheet" th:href="@{/css/home.css}">
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <title th:text="#{home.pageTitle}">Journally</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
-
-<header>
-    <h1>Digital Life</h1>
-</header>
-
-<main>
-    <section class="rounded-blocks">
-        <div class="block">
-            <h2>About Digital Life</h2>
-            <p>Welcome to Digital Life, a creative space where your stories come to life. Whether you’re a seasoned writer or just starting, our platform is designed to inspire and support your storytelling journey. <br> Here, you can write and share your stories, generate AI-generated images to accompany them, and even receive personalized AI feedback to improve your writing. <br> Connect with a passionate community of storytellers, share your work publicly or privately, and explore the endless possibilities of creative expression.
-                <br> <br>
-                At Digital-Life, we believe that storytelling is for everyone. Whether you're writing fiction, journaling, or sharing personal narratives, we’re here to support and inspire you every step of the way. Join us and discover the power of words!</p>
-        </div>
-
-        <div class="block">
-            <img src="story writing.webp" width="400" height="400" alt=""/>
-        </div>
-
-        <div class="block">
-            <h2>Featured stories</h2>
-            <p> <h3>Look through some public stories</h3>
-            <div class="story-item-block">
-                <img src="story1_AI picture.webp" alt="AI image 1"/>
-                <div class="story-content-block">
-                    <h3>A quiet walk in nature</h3>
-                    <h4>Cynthia Rose</h4>
-                    <p>Last week, I took a solitary walk through a nature reserve. The air was crisp, the trees beginning to shed their leaves as autumn set in. I hadn’t ...
-                    </p>
+    <section class="hero-card card">
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <div class="companion-pill" th:if="${currentCompanion != null}">
+                    <span class="companion-dot"></span>
+                    <span th:text="#{home.companionToday(${@siteText.companionName(currentCompanion.key(), #locale)})}">Sol accompanies you today</span>
+                </div>
+                <h1 th:text="#{home.greeting(${currentDisplayName})}">Hi Maja!</h1>
+                <p th:text="#{home.subheading}">A calm place to reflect, hold on to things, and find them again.</p>
+                <div class="button-row" style="margin-top: 22px;">
+                    <a class="button" th:href="@{/journal}" th:text="#{home.newEntry}">New entry</a>
+                    <a class="ghost-button" th:href="@{/journal/home}" th:text="#{home.allEntries}">All entries</a>
                 </div>
             </div>
-            <div class="story-item-block">
-                <img src="story2_AI picture.webp" alt="AI image 2"/>
-                <div class="story-content-block">
-                    <h3>A conversation that changed my ...</h3>
-                    <h4>Billy Joel</h4>
-                    <p>I had a conversation with a close friend last week that ended up being more profound than I anticipated. We started with casual topics—work, movies, and daily frustrations...
-                    </p>
+            <div class="card metric-card">
+                <span class="micro-label" th:text="#{home.thisWeek}">This week</span>
+                <div class="metric-number" th:text="${weeklyReflections}">4</div>
+                <p th:text="${weeklyReflections == 1} ? #{home.reflectionSaved.singular} : #{home.reflectionSaved.plural}">Reflections saved</p>
+                <div class="week-strip">
+                    <div class="week-day" th:each="day : ${weeklyActivity}">
+                        <span th:text="${day.label}">Mo</span>
+                        <div class="week-dot" th:classappend="${day.count > 0} ? ' active'"></div>
+                        <strong th:text="${day.count}">1</strong>
+                    </div>
                 </div>
             </div>
-            </p>
-        </div>
-
-        <div class="block">
-            <h2>What we offer:</h2>
-            <p><h3>Write your stories:</h3>Craft stories in a distraction-free writing environment, and let your imagination run wild.
-            <h3>Generate AI Images:</h3>
-            Visualize your stories with AI-generated pictures, adding a creative and personal touch to your work.
-            <h3>AI Writing Feedback:</h3>
-            Receive real-time AI insights and suggestions on your writing, helping you refine and improve your storytelling skills.
-            <h3>Community Engagement:</h3>
-            Share your stories with a vibrant community of writers and readers. You can make your stories public for the world to see or share them within a private writing group.
-            </p>
-        </div>
-        <div class="block">
-            <h2>The Benefits of Writing</h2>
-            <p>Storytelling is more than just an art form—it’s a way to engage with yourself and others. Writing your thoughts, experiences, and stories can have powerful health benefits. Studies have shown that regularly writing about your day or reflecting on personal experiences can:
-            <h3>Reduce Stress:</h3>
-            Journaling or reflecting on your thoughts helps reduce mental clutter and stress. It can be an outlet for releasing emotions and processing difficult experiences.
-            <h3>Boost Emotional Health:</h3> Writing gives you the opportunity to reflect on your feelings, which can lead to greater self-awareness and emotional well-being.
-            <h3>Improve Mental Clarity:</h3>
-            As you write, you organize your thoughts, which can lead to better problem-solving skills and clearer thinking.
-            <h3>Promote Mindfulness:</h3> Reflecting on your day through writing encourages mindfulness, allowing you to appreciate small moments, learn from challenges, and stay present.</p>
-        </div>
-
-        <div class="block">
-            <h2>Digital Life</h2>
-            <p>
-                <img th:src="@{/images/Logo_Digital_Life.png}" width="100%" height="100%" alt="Digital Life Logo"/>
-            </p>
         </div>
     </section>
-</main>
 
+    <section class="metrics-grid" style="margin-top: 18px;">
+        <article class="metric-card">
+            <span class="micro-label" th:text="#{home.streak}">Streak</span>
+            <div class="metric-number" th:text="${streakCount}">4</div>
+            <p th:text="${streakCount == 1} ? #{home.streakDay.singular} : #{home.streakDay.plural}">Days in a row</p>
+        </article>
+        <article class="metric-card">
+            <span class="micro-label" th:text="#{home.quickNote.label}">Quick note for later</span>
+            <h3 th:text="#{home.quickNote.title}">Capture thoughts</h3>
+            <p th:text="#{home.quickNote.description}">Hold on to small moments right away.</p>
+        </article>
+        <article class="metric-card">
+            <span class="micro-label" th:text="#{home.companion.label}">Companion</span>
+            <h3 th:text="${@siteText.companionName(currentCompanion.key(), #locale)}">Sol</h3>
+            <p th:text="${@siteText.companionFocusPrompt(currentCompanion.key(), #locale)}">Helps you notice small wins and grounding details.</p>
+        </article>
+    </section>
+
+    <section style="margin-top: 18px;">
+        <div class="section-header">
+            <div>
+                <h2 style="margin:0;font-family:'Parkinsans',sans-serif;font-size:1.8rem;" th:text="#{home.quickAccess.title}">Quick access</h2>
+                <p th:text="#{home.quickAccess.description}">Direct ways into your Journally flow.</p>
+            </div>
+        </div>
+        <div class="quick-grid">
+            <a class="quick-action" th:href="@{/journal}">
+                <h4 th:text="#{home.quickAccess.entry.title}">New entry</h4>
+                <small th:text="#{home.quickAccess.entry.description}">Mood, reflection, images, and guided prompts in one flow.</small>
+            </a>
+            <a class="quick-action" th:href="@{/companions}">
+                <h4 th:text="#{home.quickAccess.companion.title}">Choose companion</h4>
+                <small th:text="#{home.quickAccess.companion.description}">Switch color world and reflection style through your companion.</small>
+            </a>
+            <a class="quick-action" th:href="@{/profile/{username}(username=${currentUsername})}">
+                <h4 th:text="#{home.quickAccess.profile.title}">Weekly overview</h4>
+                <small th:text="#{home.quickAccess.profile.description}">See focus areas, badge progress, and your profile story.</small>
+            </a>
+        </div>
+    </section>
+
+    <section style="margin-top: 18px;">
+        <div class="section-header">
+            <div>
+                <h2 style="margin:0;font-family:'Parkinsans',sans-serif;font-size:1.8rem;" th:text="#{home.recentEntry.title}">Your latest entry</h2>
+                <p th:text="#{home.recentEntry.description}">The most recently saved moment from your week.</p>
+            </div>
+            <a class="ghost-button" th:href="@{/journal/home}" th:text="#{common.openArchive}">Open archive</a>
+        </div>
+
+        <div th:if="${recentEntry == null}" class="empty-state" th:text="#{home.recentEntry.empty}">
+            No entry saved yet.
+        </div>
+
+        <article th:if="${recentEntry != null}" class="entry-card">
+            <div class="entry-meta-row">
+                <div class="entry-date" th:text="${#temporals.format(recentEntry.timestamp, 'EEEE, dd. MMMM yyyy')}">Friday, 27 February 2026</div>
+                <a class="ghost-button" th:href="@{/journal/entry(id=${recentEntry.id})}" th:text="#{common.open}">Open</a>
+            </div>
+
+            <div>
+                <span class="micro-label" th:text="#{home.recentEntry.mood}">Your mood</span>
+                <div class="mood-track"
+                     th:style="'--mood-percent:' + ${((recentEntry.moodScore - 1) * 100 / 6)} + '%'"></div>
+            </div>
+
+            <div class="chip-list"
+                 th:if="${!#lists.isEmpty(recentEntry.emotionTags) or (recentEntry.customEmotion != null and !#strings.isEmpty(recentEntry.customEmotion))}">
+                <span class="chip" th:each="tag : ${recentEntry.emotionTags}" th:text="${@siteText.localizeEmotionTag(tag, #locale)}">Happy</span>
+                <span class="chip" th:if="${recentEntry.customEmotion != null and !#strings.isEmpty(recentEntry.customEmotion)}" th:text="${recentEntry.customEmotion}">Curious</span>
+            </div>
+
+            <div class="grid-two" style="align-items:start;">
+                <div>
+                    <h3 th:text="${#strings.isEmpty(recentEntry.title)} ? #{common.untitled} : ${recentEntry.title}">Untitled</h3>
+                    <p class="detail-copy" th:text="${#strings.abbreviate(recentEntry.content, 260)}">Summary...</p>
+                    <p class="helper-text"
+                       th:if="${recentEntry.quickNote != null and !#strings.isEmpty(recentEntry.quickNote)}"
+                       th:text="#{home.recentEntry.quickNotePrefix(${recentEntry.quickNote})}">Quick note...</p>
+                </div>
+                <div class="gallery-grid" th:if="${!#lists.isEmpty(recentEntry.displayImageGallery)}">
+                    <img th:each="image, stat : ${recentEntry.displayImageGallery}"
+                         th:if="${stat.index < 2}"
+                         th:src="${image}"
+                         th:alt="#{common.imageAlt.recentJournal}">
+                </div>
+            </div>
+        </article>
+    </section>
+</main>
 </body>
 </html>

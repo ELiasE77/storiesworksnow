@@ -38,20 +38,7 @@ public class UserController {
      */
     @GetMapping("/profile")
     public String showProfilePage(Model model, Authentication authentication) {
-        String currentUsername = authentication.getName();
-
-        User user = userDetailService.findByUsername(currentUsername);
-
-        // Fetch persona details if present
-        var profile = profileRepo.findByUserUsername(currentUsername).orElse(null);
-
-        model.addAttribute("isFollowing", true);
-        model.addAttribute("user", user);
-        model.addAttribute("profile", profile);
-        model.addAttribute("currentUsername", currentUsername);
-
-
-        return "user/userProfile";
+        return "redirect:/profile/" + authentication.getName();
     }
 
     /**
@@ -64,28 +51,7 @@ public class UserController {
      */
     @GetMapping("/{username}")
     public String viewProfile(@PathVariable String username, Principal principal, Model model) {
-        // Find logged-in user (the viewer)
-        User currentUser = userDetailService.findByUsername(principal.getName());
-        String currentUsername = principal.getName();
-
-        // Find the profile user
-        User profileUser = userDetailService.findByUsername(username);
-
-        // Associated persona if available
-        var profile = profileRepo.findByUserUsername(username).orElse(null);
-
-        // Check if the current user is already following the profile user
-        boolean isFollowing = currentUser.getFollowing().contains(profileUser);
-
-        // Add the necessary data to the model
-        model.addAttribute("user", profileUser);
-        model.addAttribute("profile", profile);
-        model.addAttribute("isFollowing", isFollowing);
-        model.addAttribute("currentUsername", currentUsername);
-
-
-        // Return the profile view
-        return "user/userProfile";
+        return "redirect:/profile/" + username;
     }
 
     /**

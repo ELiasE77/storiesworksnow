@@ -1,22 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Edit Persona Feature</title>
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{persona.pageTitle}">Edit persona | Journally</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
-<div th:replace="~{navbar :: navbar(currentUsername=${currentUsername})}"></div>
-<div class="container">
-    <h2>Edit Persona Feature</h2>
-    <form th:action="@{/profile/feature}" th:object="${profile}" method="post">
-        <textarea th:field="*{personaFeature}" rows="15" style="width:100%"></textarea>
-        <div style="margin-top:1rem;">
-            <button type="submit">Save</button>
-            <a th:href="@{'/profile/' + ${currentUsername}}">Cancel</a>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
+
+    <section class="hero-card card">
+        <div class="page-header">
+            <div>
+                <h1 th:text="#{persona.heading}">Edit persona text</h1>
+                <p th:text="#{persona.subheading}">This text gives Journally extra context for feedback, questions, and image ideas.</p>
+            </div>
         </div>
-    </form>
-</div>
+    </section>
+
+    <section class="entry-card" style="margin-top: 18px;">
+        <form th:action="@{/profile/feature}" th:object="${profile}" method="post" class="form-grid">
+            <div>
+                <label class="form-label" for="personaFeature" th:text="#{persona.label}">Persona text</label>
+                <textarea id="personaFeature" th:field="*{personaFeature}" rows="14"></textarea>
+            </div>
+            <div class="button-row">
+                <button type="submit" class="button" th:text="#{common.save}">Save</button>
+                <a class="ghost-button" th:href="@{'/profile/' + ${currentUsername}}" th:text="#{common.cancel}">Cancel</a>
+            </div>
+        </form>
+    </section>
+</main>
 </body>
 </html>

@@ -9,7 +9,12 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        indexes = {
+                @Index(name = "idx_users_username", columnList = "username", unique = true)
+        }
+)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +32,11 @@ public class User {
     @JoinTable(
             name = "user_follows",
             joinColumns = @JoinColumn(name = "follower_id"),
-            inverseJoinColumns = @JoinColumn(name = "followed_id")
+            inverseJoinColumns = @JoinColumn(name = "followed_id"),
+            indexes = {
+                    @Index(name = "idx_user_follows_follower", columnList = "follower_id"),
+                    @Index(name = "idx_user_follows_followed", columnList = "followed_id")
+            }
     )
     private Set<User> following = new HashSet<>();
 
@@ -41,7 +50,11 @@ public class User {
     @JoinTable(
             name = "user_community",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "community_id")
+            inverseJoinColumns = @JoinColumn(name = "community_id"),
+            indexes = {
+                    @Index(name = "idx_user_community_user", columnList = "user_id"),
+                    @Index(name = "idx_user_community_community", columnList = "community_id")
+            }
     )
     private Set<Community> communities = new HashSet<>();
 

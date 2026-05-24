@@ -14,7 +14,7 @@ public class AuthenticationSuccesHandler extends SavedRequestAwareAuthentication
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
-        response.sendRedirect("/journal/home");
+        response.sendRedirect("/");
     super.onAuthenticationSuccess(request, response, authentication);
     }
 }

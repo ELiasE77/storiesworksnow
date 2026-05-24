@@ -1,37 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
-    <title>Community Overview</title>
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <title th:text="#{community.overview.pageTitle}">Community overview</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
     <link rel="stylesheet" th:href="@{/css/community/allCommunities.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <header>
+        <h1 th:text="#{community.overview.heading}">All communities</h1>
+    </header>
 
-<header>
-    <h1>All Communities</h1>
-</header>
+    <div class="create-community-container">
+        <a th:href="@{/communities/createCommunity}" class="create-community-link" th:text="#{community.create.link}">Create community</a>
+    </div>
 
-<div class="create-community-container">
-    <a th:href="@{/communities/createCommunity}" class="create-community-link">Create Community</a>
-</div>
-
-<main>
     <section class="community-container">
-        <h2>List of Communities</h2>
+        <h2 th:text="#{community.overview.listTitle}">List of communities</h2>
         <div class="community-list">
             <ul>
                 <li th:each="community : ${communities}" class="community-item">
                     <a th:href="@{'/communities/' + ${community.id}}" class="community-link">
                         <div class="community-details">
                             <h3 th:text="${community.name}"></h3>
-                            <p th:text="'Members: ' + ${#lists.size(community.users)}"></p>
+                            <p th:text="#{community.members(${community.memberCount})}">Members: 12</p>
 
-                            <!-- Join form -->
                             <form th:action="@{'/communities/join/' + ${community.id}}" method="post">
-                                <button type="submit" class="join-button">Join</button>
+                                <button type="submit" class="join-button" th:text="#{community.join}">Join</button>
                             </form>
                         </div>
                     </a>

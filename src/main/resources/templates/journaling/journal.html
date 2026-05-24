@@ -1,153 +1,292 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Journal Entries</title>
-  <link rel="stylesheet" th:href="@{/css/journaling/journal_original.css}">
-  <link rel="stylesheet" th:href="@{/css/navbar.css}">
-  <style>
-    #speechIndicator { display: none; color: green; }
-    .photo-tools { margin: 12px 0; display: flex; gap: 10px; align-items: center; }
-    .photo-preview-row { display: flex; gap: 8px; overflow-x: auto; margin-top: 10px; }
-    .photo-preview-row img { width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{journal.create.pageTitle}">New entry | Journally</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
 </head>
-<body>
-<div th:replace="~{navbar :: navbar}"></div>
-<section>
-  <div class="journalEntry-container">
-    <h1>Create your Journal entry!</h1>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-    <form id="journal-form">
-      <textarea name="title" id="titleText" placeholder="Write your title here..."></textarea>
-      <textarea name="content" id="journal-content" placeholder="Write your journal entry here..."></textarea>
+    <section class="hero-card card composer-hero">
+        <div class="page-header">
+            <div>
+                <span class="micro-label" th:text="#{journal.create.stepLabel}">New reflection</span>
+                <h1 th:text="#{journal.create.heading}">Create a new entry</h1>
+                <p th:text="#{journal.create.subheading}">Start with your feeling, tell the day in your own words, and let Journally help you keep thinking.</p>
+            </div>
+        </div>
+    </section>
 
-      <label for="visibility">Visibility:</label>
-      <select name="visibility" id="visibility" required onchange="toggleCommunitySelector()">
-        <option value="PRIVATE">Private</option>
-        <option value="PUBLIC">Public</option>
-        <option value="COMMUNITY">Community</option>
-      </select>
+    <form id="journal-form" data-submit-mode="json" class="journal-composer">
+        <input type="hidden" id="imageUrl" name="imageUrl" value="">
+        <input type="hidden" id="imageUrlsJson" name="imageUrlsJson" value="[]">
+        <input type="hidden" id="entryDataJson" name="entryDataJson" value="{}">
+        <input type="hidden" id="selected-style" name="selected-style" value="realistic">
+        <input type="hidden" id="persona-feature" th:value="${personaFeature}">
+        <input type="hidden" id="voiceMemoAudioDataUrl" name="voiceMemoAudioDataUrl" value="">
+        <input type="hidden" id="voiceMemoTranscript" value="">
 
-      <div id="community-selector" style="display:none;">
-        <label for="community">Select a community:</label>
-        <select name="communityId" id="community">
-          <option value="" disabled selected>Select a community</option>
-          <option th:each="c : ${communities}" th:value="${c.id}" th:text="${c.name}"></option>
-        </select>
-      </div>
+        <section class="composer-progress" aria-live="polite">
+            <div>
+                <span class="micro-label" id="composerStepLabel" th:text="#{journal.step.mood.label}">Step 1 of 7</span>
+                <h2 id="composerStepTitle" th:text="#{journal.step.mood.title}">How are you feeling?</h2>
+            </div>
+            <div class="composer-progress-track" aria-hidden="true">
+                <span id="composerProgressFill"></span>
+            </div>
+        </section>
 
-      <input type="hidden" name="imageUrl" id="imageUrl" value="">
-      <input type="hidden" name="imageUrlsJson" id="imageUrlsJson" value="[]">
+        <div class="composer-stage">
+            <section class="composer-step is-active" data-step="mood" data-title="#{journal.step.mood.title}">
+                <div class="entry-card composer-card">
+                    <div class="range-shell composer-range">
+                        <div class="range-row">
+                            <div>
+                                <span class="micro-label" th:text="#{journal.likertLabel}">Likert scale</span>
+                                <h3 th:text="#{journal.moodQuestion.today}">How are you feeling today?</h3>
+                            </div>
+                            <div class="range-value" id="moodValue">4</div>
+                        </div>
+                        <input type="range" id="moodScore" min="1" max="7" step="1" value="4">
+                        <p class="helper-text" th:text="#{journal.moodHelper}">1 = heavy, 7 = light. The scale is saved with your entry.</p>
+                    </div>
+                </div>
+            </section>
 
-      <div class="photo-tools">
-        <label for="photoUpload">Add your own photos</label>
-        <input type="file" id="photoUpload" accept="image/*" multiple>
-      </div>
-      <div id="photoPreviewRow" class="photo-preview-row"></div>
+            <section class="composer-step" data-step="choice" data-title="#{journal.step.choice.title}" hidden>
+                <div class="entry-card composer-card">
+                    <span class="micro-label" th:text="#{journal.step.choice.label}">Choose your path</span>
+                    <h3 th:text="#{journal.step.choice.title}">How do you want to add your reflection?</h3>
+                    <div class="reflection-choice-grid">
+                        <button type="button" class="reflection-choice-card" data-reflection-mode="write">
+                            <span th:text="#{journal.choice.write}">Write your reflection</span>
+                            <small th:text="#{journal.choice.writeDescription}">Type or speak your reflection in Journally.</small>
+                        </button>
+                        <button type="button" class="reflection-choice-card" data-reflection-mode="upload">
+                            <span th:text="#{journal.choice.upload}">Upload your reflection</span>
+                            <small th:text="#{journal.choice.uploadDescription}">Photograph handwritten pages and convert them to editable text.</small>
+                        </button>
+                    </div>
+                </div>
+            </section>
 
-      <div class="button-group">
-        <button type="button" id="speechToTextBtn">Use Speech-to-Text</button>
-        <button type="button" id="get-feedback">Get Feedback</button>
-        <button type="button" id="generate-image">Generate Image</button>
-        <button type="submit">Submit</button>
-      </div>
-      <div id="speechIndicator">🎤 Listening...</div>
+            <section class="composer-step" data-step="reflection" data-title="#{journal.step.reflection.title}" hidden>
+                <div class="entry-card composer-card">
+                    <div class="composer-panel" data-mode-panel="write">
+                        <span class="micro-label" th:text="#{journal.choice.write}">Write your reflection</span>
+                        <h3 th:text="#{journal.step.reflection.writeTitle}">Write about your day</h3>
+                    </div>
+                    <div class="composer-panel" data-mode-panel="upload" hidden>
+                        <span class="micro-label" th:text="#{journal.choice.upload}">Upload your reflection</span>
+                        <h3 th:text="#{journal.step.reflection.uploadTitle}">Upload handwritten pages</h3>
+                        <label class="upload-dropzone" for="handwritingUpload">
+                            <span th:text="#{journal.handwriting.upload}">Choose handwriting photos</span>
+                            <small th:text="#{journal.handwriting.note}">JPG, PNG, or WebP photos are converted into editable text.</small>
+                        </label>
+                        <input class="visually-hidden" type="file" id="handwritingUpload" accept="image/*" multiple>
+                        <div id="handwritingPreviewRow" class="photo-preview-row"></div>
+                        <p id="handwritingStatus" class="helper-text" aria-live="polite"></p>
+                        <button type="button" class="ghost-button" id="transcribe-handwriting" th:text="#{journal.handwriting.convert}">Convert handwriting</button>
+                    </div>
 
-      <h2>Select Image Style</h2>
-      <div class="style-selection">
-        <img th:src="@{/images/minimalist_style.png}" class="style-option" data-style="minimalist" alt="Minimalist">
-        <img th:src="@{/images/labor_poster_style.png}" class="style-option" data-style="labor poster" alt="Labor Poster">
-        <img th:src="@{/images/sketch_style.png}" class="style-option" data-style="sketch" alt="Sketch">
-        <img th:src="@{/images/watercolor_style.png}" class="style-option" data-style="watercolor" alt="Watercolor">
-      </div>
-      <input type="hidden" id="selected-style" name="selected-style" value="minimalist">
+                    <div>
+                        <label class="form-label" for="journal-content" th:text="#{journal.writeLabel}">Start writing</label>
+                        <textarea id="journal-content" name="content" th:placeholder="#{journal.writePlaceholder}"></textarea>
+                    </div>
 
-      <div id="feedback">
-        <h3>AI Feedback</h3>
-        <p id="feedback-text"></p>
-      </div>
-      <div id="generated-image-container">
-        <img id="generated-image" src="" alt="Generated Image" style="display:none;max-width:100%;" />
-      </div>
-      <div id="loading-indicator" style="display:none;">
-        <p>Generating image, please wait...</p>
-      </div>
+                    <div class="speech-panel">
+                        <button type="button"
+                                class="ghost-button speech-button"
+                                id="speechToTextBtn"
+                                data-target="journal-content"
+                                data-transcript-target="voiceMemoTranscript"
+                                data-audio-target="voiceMemoAudioDataUrl"
+                                data-record-audio="true"
+                                th:text="#{journal.speech.start}">
+                            Speech to text
+                        </button>
+                        <span id="speechIndicator" class="helper-text" style="display:none;" th:text="#{journal.speech.active}">Microphone active...</span>
+                        <audio id="voiceMemoPlayback" class="voice-playback" controls hidden></audio>
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer-step" data-step="emotions" data-title="#{journal.step.emotions.title}" hidden>
+                <div class="entry-card composer-card">
+                    <span class="micro-label" th:text="#{journal.emotions}">Your emotions</span>
+                    <h3 th:text="#{journal.step.emotions.title}">Which emotions were present today?</h3>
+                    <div class="toggle-list" data-chip-group="emotion">
+                        <button type="button" class="chip-toggle" data-value="HAPPY" th:text="#{emotion.happy}">Happy</button>
+                        <button type="button" class="chip-toggle" data-value="CHEERFUL" th:text="#{emotion.cheerful}">Cheerful</button>
+                        <button type="button" class="chip-toggle" data-value="WELL_RESTED" th:text="#{emotion.well_rested}">Well-rested</button>
+                        <button type="button" class="chip-toggle" data-value="SAD" th:text="#{emotion.sad}">Sad</button>
+                        <button type="button" class="chip-toggle" data-value="CONTENT" th:text="#{emotion.content}">Content</button>
+                        <button type="button" class="chip-toggle" data-value="TIRED" th:text="#{emotion.tired}">Tired</button>
+                        <button type="button" class="chip-toggle" data-value="DESPERATE" th:text="#{emotion.desperate}">Desperate</button>
+                        <button type="button" class="chip-toggle" data-value="BORED" th:text="#{emotion.bored}">Bored</button>
+                        <button type="button" class="chip-toggle" data-value="STRESSED" th:text="#{emotion.stressed}">Stressed</button>
+                        <button type="button" class="chip-toggle" data-value="RELAXED" th:text="#{emotion.relaxed}">Relaxed</button>
+                    </div>
+                    <div>
+                        <label class="form-label" for="customEmotion" th:text="#{journal.customEmotion}">Another emotion</label>
+                        <input type="text" id="customEmotion" th:placeholder="#{journal.customEmotionPlaceholder}">
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer-step" data-step="focus" data-title="#{journal.focusLabel}" hidden>
+                <div class="entry-card composer-card">
+                    <span class="micro-label" th:text="#{journal.focus}">Focus</span>
+                    <h3 th:text="#{journal.focusLabel}">What is on your mind right now?</h3>
+                    <div class="toggle-list" data-chip-group="focus">
+                        <button type="button" class="chip-toggle" data-value="PET" th:text="#{focus.pet}">Pet</button>
+                        <button type="button" class="chip-toggle" data-value="FRIENDS" th:text="#{focus.friends}">Friends</button>
+                        <button type="button" class="chip-toggle" data-value="WORK_SCHOOL" th:text="#{focus.work_school}">Work / school</button>
+                        <button type="button" class="chip-toggle" data-value="FAMILY" th:text="#{focus.family}">Family</button>
+                        <button type="button" class="chip-toggle" data-value="FOOD" th:text="#{focus.food}">Food</button>
+                        <button type="button" class="chip-toggle" data-value="NEWS" th:text="#{focus.news}">News</button>
+                        <button type="button" class="chip-toggle" data-value="SPORT" th:text="#{focus.sport}">Sport</button>
+                        <button type="button" class="chip-toggle" data-value="SELF_CARE" th:text="#{focus.self_care}">Self-care</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer-step" data-step="support" data-title="#{journal.supportMode}" hidden>
+                <div class="entry-card composer-card">
+                    <span class="micro-label" th:text="#{journal.support}">Support</span>
+                    <h3 th:text="#{journal.supportMode}">Support mode</h3>
+                    <div class="toggle-list" data-chip-group="support">
+                        <button type="button" class="chip-toggle" data-value="NO_PROBLEM" th:text="#{support.no_problem}">No problem</button>
+                        <button type="button" class="chip-toggle" data-value="EMOTION_QUESTION" th:text="#{support.emotion_question}">Emotion question</button>
+                        <button type="button" class="chip-toggle" data-value="REPHRASE" th:text="#{support.rephrase}">Rephrase</button>
+                        <button type="button" class="chip-toggle" data-value="GENTLE_ORGANIZE" th:text="#{support.gentle_organize}">Gently organize</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="composer-step" data-step="image" data-title="#{journal.step.image.title}" hidden>
+                <div class="entry-card composer-card">
+                    <div class="section-header">
+                        <div>
+                            <span class="micro-label" th:text="#{journal.images.title}">Images and AI</span>
+                            <h3 th:text="#{journal.step.image.title}">Create an image world</h3>
+                            <p th:text="#{journal.step.image.description}">Choose a style, upload visual context if you want, and generate a picture from your reflection.</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="photoUpload" th:text="#{journal.images.upload}">Add your own images</label>
+                        <input type="file" id="photoUpload" accept="image/*" multiple>
+                        <p class="form-note" th:text="#{journal.images.note}">Your own images are passed along as context for image generation.</p>
+                        <div id="photoPreviewRow" class="photo-preview-row"></div>
+                    </div>
+
+                    <div>
+                        <label class="form-label" th:text="#{journal.imageStyle}">Image style</label>
+                        <div class="style-grid">
+                            <button type="button" class="style-card active" data-style="realistic">
+                                <h4 th:text="#{imageStyle.realistic}">Realistic</h4>
+                                <p th:text="#{journal.imageStyle.realisticDescription}">A calm, believable scene with natural details.</p>
+                            </button>
+                            <button type="button" class="style-card" data-style="watercolor">
+                                <h4 th:text="#{imageStyle.watercolor}">Watercolor</h4>
+                                <p th:text="#{journal.imageStyle.watercolorDescription}">Soft color areas, light texture, and a gentle painted mood.</p>
+                            </button>
+                            <button type="button" class="style-card" data-style="cartoon">
+                                <h4 th:text="#{imageStyle.cartoon}">Comic</h4>
+                                <p th:text="#{journal.imageStyle.cartoonDescription}">A comic page with multiple panels that tells the day.</p>
+                            </button>
+                            <button type="button" class="style-card" data-style="bizarre">
+                                <h4 th:text="#{imageStyle.bizarre}">Bizarre</h4>
+                                <p th:text="#{journal.imageStyle.bizarreDescription}">Surreal, symbolic, and a little unexpected.</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="button-row">
+                        <button type="button" class="ghost-button" id="get-feedback" th:text="#{journal.generateFeedback}">Generate reflection questions</button>
+                        <button type="button" class="button" id="generate-image" th:text="#{journal.generateImage}">Generate image</button>
+                    </div>
+
+                    <div id="feedback" class="prompt-card">
+                        <span class="micro-label" th:text="#{journal.feedbackLabel}">Short feedback</span>
+                        <p id="feedback-text" th:text="#{journal.feedbackPlaceholder}">Journally can give you a short reflection and two to three questions after you write.</p>
+                    </div>
+
+                    <div id="reflection-prompts" class="prompt-grid"></div>
+
+                    <div id="generated-image-container" class="detail-media-grid" style="display:none;">
+                        <img id="generated-image" src="" th:alt="#{journal.generatedImageAlt}" style="display:none;" class="detail-hero-image">
+                    </div>
+
+                    <div id="loading-indicator" class="helper-text" style="display:none;" th:text="#{journal.imageLoading}">Image is being generated...</div>
+                </div>
+            </section>
+
+            <section class="composer-step" data-step="visibility" data-title="#{journal.visibility}" hidden>
+                <div class="entry-card composer-card">
+                    <span class="micro-label" th:text="#{journal.visibility}">Visibility</span>
+                    <h3 th:text="#{journal.step.visibility.title}">Who should be able to see this entry?</h3>
+                    <div>
+                        <label class="form-label" for="visibility" th:text="#{journal.visibility}">Visibility</label>
+                        <select name="visibility" id="visibility" onchange="toggleCommunitySelector()">
+                            <option value="PRIVATE" th:text="#{journal.visibility.private}">Private</option>
+                            <option value="PUBLIC" th:text="#{journal.visibility.public}">Public</option>
+                            <option value="COMMUNITY" th:text="#{journal.visibility.community}">Community</option>
+                        </select>
+                    </div>
+
+                    <div id="community-selector" style="display:none;">
+                        <label class="form-label" for="community" th:text="#{journal.communitySelect}">Choose community</label>
+                        <select name="communityId" id="community">
+                            <option value="" th:text="#{common.none}">No selection</option>
+                            <option th:each="c : ${communities}" th:value="${c.id}" th:text="${c.name}"></option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="composer-actions">
+            <button type="button" class="ghost-button" id="composerBack" th:text="#{common.back}">Back</button>
+            <button type="button" class="ghost-button" id="composerSkip" th:text="#{journal.step.skip}">Skip</button>
+            <button type="button" class="button" id="composerNext" th:text="#{journal.step.next}">Next</button>
+            <button type="submit" class="button" id="composerSubmit" hidden th:text="#{journal.saveEntry}">Save entry</button>
+        </div>
     </form>
-  </div>
-</section>
 
-<script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
+    <button type="button" id="quickSubmitEntry" class="quick-submit" th:text="#{journal.quickSubmit}">Submit reflection</button>
+</main>
+
+<script th:inline="javascript">
+    window.journallyI18n = {
+        removeImage: [[#{journal.removeImage}]],
+        reflectionQuestionLabel: [[#{journal.reflectionQuestionLabel}]],
+        reflectionAnswerPlaceholder: [[#{journal.reflectionAnswerPlaceholder}]],
+        writeFirstAlert: [[#{journal.alertWriteFirst}]],
+        saveError: [[#{journal.saveError}]],
+        feedbackLoading: [[#{journal.feedbackLoading}]],
+        feedbackEmpty: [[#{journal.feedbackEmpty}]],
+        feedbackError: [[#{journal.feedbackError}]],
+        imageError: [[#{journal.imageError}]],
+        speechStart: [[#{journal.speech.start}]],
+        speechStop: [[#{journal.speech.stop}]],
+        speechUnsupported: [[#{journal.speech.unsupported}]],
+        handwritingLoading: [[#{journal.handwriting.loading}]],
+        handwritingReady: [[#{journal.handwriting.ready}]],
+        handwritingError: [[#{journal.handwriting.error}]],
+        stepOf: [[#{journal.step.of}]],
+        next: [[#{journal.step.next}]],
+        saveEntry: [[#{journal.saveEntry}]]
+    };
+</script>
+<script th:src="@{/js/pageSpecific/journallyComposer.js}"></script>
 <script th:src="@{/js/chatGPTIntegration/textFeedback.js}"></script>
+<script th:src="@{/js/chatGPTIntegration/imageGeneration.js}"></script>
 <script th:src="@{/js/component/speechToText.js}"></script>
 <script th:src="@{/js/component/toggleCommunitySelector.js}"></script>
-
-<script>
-  const selectedImages = [];
-  window.selectedImages = selectedImages;
-
-  function syncImages() {
-    document.getElementById('imageUrlsJson').value = JSON.stringify(selectedImages);
-    document.getElementById('imageUrl').value = selectedImages[0] || '';
-  }
-
-  try {
-    const existing = JSON.parse(document.getElementById('imageUrlsJson').value || "[]");
-    selectedImages.push(...existing);
-  } catch (e) {}
-
-  document.getElementById('photoUpload').addEventListener('change', async function (event) {
-    const files = [...event.target.files];
-    for (const file of files) {
-      const base64 = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result || '';
-          resolve(result.toString().split(',')[1] || '');
-        };
-        reader.readAsDataURL(file);
-      });
-      if (base64) {
-        selectedImages.push(base64);
-      }
-    }
-
-    const preview = document.getElementById('photoPreviewRow');
-    preview.innerHTML = '';
-    selectedImages.forEach((img64) => {
-      const img = document.createElement('img');
-      img.src = `data:image/png;base64,${img64}`;
-      preview.appendChild(img);
-    });
-    syncImages();
-    event.target.value = '';
-  });
-
-  document.getElementById('journal-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    syncImages();
-
-    const payload = {
-      title: document.getElementById('titleText').value,
-      content: document.getElementById('journal-content').value,
-      visibility: document.getElementById('visibility').value,
-      communityId: document.getElementById('community').value || null,
-      imageUrl: document.getElementById('imageUrl').value,
-      imageUrls: JSON.parse(document.getElementById('imageUrlsJson').value || '[]')
-    };
-
-    const res = await fetch('/api/journal/save', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    if (res.ok) {
-      window.location.href = '/journal/home';
-    } else {
-      console.error('Save failed', await res.text());
-    }
-  });
-</script>
 </body>
 </html>

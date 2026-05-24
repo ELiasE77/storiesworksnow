@@ -1,7 +1,10 @@
 package com.digitallife.journal_site.communities;
 
 import com.digitallife.journal_site.Journal.JournalEntry;
+import com.digitallife.journal_site.Journal.JournalEntryData;
+import com.digitallife.journal_site.Journal.JournalEntryListItem;
 import com.digitallife.journal_site.Journal.JournalService;
+import com.digitallife.journal_site.profile.ProfileRepository;
 import com.digitallife.journal_site.user.User;
 import com.digitallife.journal_site.user.UserDetailService;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,6 +42,9 @@ class CommunityControllerTest {
     private UserDetailService userDetailService; // Mock the UserDetailService
 
     @MockBean
+    private ProfileRepository profileRepository;
+
+    @MockBean
     private  CommunityService communityService; // Mock the CommunityService
 
     @MockBean
@@ -48,8 +55,10 @@ class CommunityControllerTest {
 
     private User mockUser;
     private Community mockCommunity;
+    private CommunitySummary mockCommunitySummary;
     private Set<Community> mockSet = new HashSet<>();
     private List<Community> mockList = new ArrayList<>();
+    private List<CommunitySummary> mockSummaryList = new ArrayList<>();
     private JournalEntry mockEntries;
 
     @BeforeEach
@@ -71,15 +80,18 @@ class CommunityControllerTest {
         mockCommunity = new Community();
         mockCommunity.setId(1L);
         mockCommunity.setName("testCommunity");
+        mockCommunitySummary = new CommunitySummary(1L, "testCommunity", "Description", 1);
 
         // add community to list and set for model testing
         mockSet.add(mockCommunity);
         mockList.add(mockCommunity);
+        mockSummaryList.add(mockCommunitySummary);
 
         // add this community to the testuser
         mockUser.getCommunities().add(mockCommunity);
 
         when(communityService.findCommunityByUsername("testuser")).thenReturn(mockSet);
+        when(communityService.findCommunitySummariesByUsername("testuser")).thenReturn(mockSummaryList);
     }
 
     @Test
@@ -87,18 +99,18 @@ class CommunityControllerTest {
         mockMvc.perform(get("/communities/user").principal(authentication))
                 .andExpect(status().isOk()) // Check that the status is 200 OK
                 .andExpect(view().name("community/yourCommunities")) // Check that the correct view is returned
-                .andExpect(model().attribute("communities", mockSet)); // Check the model attributes passed in the method
+                .andExpect(model().attribute("communities", mockSummaryList)); // Check the model attributes passed in the method
     }
 
     @Test
     void showCommunityOverview() throws Exception {
         // return the mocklist when the communityService is called
-        when(communityService.findAll()).thenReturn(mockList);
+        when(communityService.findAllSummaries()).thenReturn(mockSummaryList);
 
         mockMvc.perform(get("/communities/communityOverview").principal(authentication))
                 .andExpect(status().isOk()) // Check that the status is 200 OK
                 .andExpect(view().name("community/allCommunities")) // Check that the correct view is returned
-                .andExpect(model().attribute("communities", mockList)); // Check the model attributes passed in the method
+                .andExpect(model().attribute("communities", mockSummaryList)); // Check the model attributes passed in the method
     }
 
     // test getting to the createCommunity page
@@ -117,11 +129,19 @@ class CommunityControllerTest {
         mockEntries.setUser(mockUser);
 
         // Add the entry to a list to be added to the model
-        List<JournalEntry> mockJournalList = new ArrayList<>();
-        mockJournalList.add(mockEntries);
+        List<JournalEntryListItem> mockJournalList = List.of(new JournalEntryListItem(
+                1L,
+                "Title",
+                "Excerpt",
+                LocalDateTime.of(2026, 2, 1, 12, 0),
+                JournalEntry.Visibility.COMMUNITY,
+                "testuser",
+                null,
+                new JournalEntryData()
+        ));
 
         //make sure the methods used in the controller return the right results
-        when(journalService.findCommunityEntries(mockCommunity)).thenReturn(mockJournalList);
+        when(journalService.findCommunityEntryItems(eq(mockCommunity), any())).thenReturn(mockJournalList);
         when(communityService.findByID(1L)).thenReturn(mockCommunity);
 
         mockMvc.perform(get("/communities/1").principal(authentication)) // Try to enter the community page

@@ -1,36 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Community</title>
-    <link rel="stylesheet" th:href="@{/css/navbar.css}">
+    <title th:text="#{community.create.pageTitle}">Create community</title>
+    <link rel="stylesheet" th:href="@{/css/journally.css}">
     <link rel="stylesheet" th:href="@{/css/community/communityCreator.css}">
 </head>
-<body>
+<body class="journally-body" th:attr="data-theme=${currentCompanionKey}">
+<main class="app-shell">
+    <div th:replace="~{navbar :: navbar}"></div>
 
-<div th:replace="~{navbar :: navbar}"></div>
+    <header>
+        <h1 th:text="#{community.create.heading}">Create a new community</h1>
+    </header>
 
-<header>
-    <h1>Create a New Community</h1>
-</header>
-
-<main>
     <section class="create-community-container">
         <form id="create-community-form" action="/communities/create" method="POST">
-            <label for="communityName">Community Name:</label>
-            <input type="text" id="communityName" name="communityName" placeholder="Enter community name" required>
+            <label for="communityName" th:text="#{community.create.name}">Community name</label>
+            <input type="text" id="communityName" name="communityName" th:placeholder="#{community.create.namePlaceholder}" required>
 
-            <label for="description">Description:</label>
-            <textarea id="description" name="description" placeholder="Enter a brief description" required></textarea>
+            <label for="description" th:text="#{community.create.description}">Description</label>
+            <textarea id="description" name="description" th:placeholder="#{community.create.descriptionPlaceholder}" required></textarea>
 
             <div class="button-group">
-                <button type="submit">Create Community</button>
-                <button type="button" onclick="window.location.href='/communities/user'">Cancel</button>
+                <button type="submit" th:text="#{community.create.submit}">Create community</button>
+                <button type="button" onclick="window.location.href='/communities/user'" th:text="#{common.cancel}">Cancel</button>
             </div>
         </form>
     </section>
 </main>
-
 </body>
 </html>

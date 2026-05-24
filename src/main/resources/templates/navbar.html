@@ -1,27 +1,102 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Navbar</title>
-</head>
 <body>
-<div th:fragment="navbar">
-    <nav>
-        <ul>
-            <li><a th:href="@{/}">Home</a></li>
+<th:block th:fragment="languageSwitcher" th:with="links=${languageLinks}">
+    <div class="language-switcher">
+        <a class="language-link"
+           th:classappend="${currentLanguage == 'en'} ? ' active'"
+           th:href="${links['en']}"
+           th:text="#{language.short.en}">EN</a>
+        <a class="language-link"
+           th:classappend="${currentLanguage == 'de'} ? ' active'"
+           th:href="${links['de']}"
+           th:text="#{language.short.de}">DE</a>
+        <a class="language-link"
+           th:classappend="${currentLanguage == 'nl'} ? ' active'"
+           th:href="${links['nl']}"
+           th:text="#{language.short.nl}">NL</a>
+    </div>
+</th:block>
 
-            <li><a th:href="@{/journal}">Journal Entry</a></li>
-            <li><a th:href="@{/journal/sharePage}">Social</a></li>
-            <li><a th:href="@{/journal/home}">Your Entries</a></li>
-            <li><a th:href="@{/journal/timeline}">Your Timeline</a></li>
-            <li><a th:href="@{/communities/user}">Your Communities</a></li>
-            <li><a th:href="@{/communities/communityOverview}">Discover Communities</a></li>
+<div th:fragment="navbar" th:with="path=${currentPath}">
+    <header class="topbar">
+        <a class="brand-lockup" th:href="@{/}">
+            <div class="brand-wordmark" aria-label="Journally">
+                <span class="dark">journ</span><span class="accent">ally</span>
+            </div>
+        </a>
+        <div class="topbar-actions">
+            <div th:replace="~{navbar :: languageSwitcher}"></div>
+            <a class="icon-badge" th:href="@{/settings}" th:attr="aria-label=#{navbar.settings}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <path d="M12 2v2"></path>
+                    <path d="M12 20v2"></path>
+                    <path d="M4.93 4.93l1.41 1.41"></path>
+                    <path d="M17.66 17.66l1.41 1.41"></path>
+                    <path d="M2 12h2"></path>
+                    <path d="M20 12h2"></path>
+                    <path d="M4.93 19.07l1.41-1.41"></path>
+                    <path d="M17.66 6.34l1.41-1.41"></path>
+                </svg>
+            </a>
+            <a class="avatar-badge" th:href="@{'/profile/' + ${currentUsername}}" th:text="${currentInitial}">J</a>
+        </div>
+    </header>
 
-            <li style="float: right">
-                <a th:href="@{'/profile/' + ${currentUsername}}">Profile</a>
-            </li>
-        </ul>
+    <nav class="tabbar" th:attr="aria-label=#{navbar.primaryNavigation}">
+        <div class="tabbar-inner">
+            <a class="tab-link"
+               th:classappend="${path == '/'} ? ' active'"
+               th:href="@{/}"
+               th:attr="aria-label=#{navbar.home}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10.5 12 3l9 7.5"></path>
+                    <path d="M5 9.5V21h14V9.5"></path>
+                </svg>
+            </a>
+            <a class="tab-link"
+               th:classappend="${#strings.startsWith(path, '/journal/home') or #strings.startsWith(path, '/journal/entry') or #strings.startsWith(path, '/journal/edit')} ? ' active'"
+               th:href="@{/journal/home}"
+               th:attr="aria-label=#{navbar.entries}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="3"></rect>
+                    <path d="M8 2v4"></path>
+                    <path d="M16 2v4"></path>
+                    <path d="M3 10h18"></path>
+                </svg>
+            </a>
+            <a class="tab-link primary"
+               th:classappend="${path == '/journal'} ? ' active'"
+               th:href="@{/journal}"
+               th:attr="aria-label=#{navbar.newEntry}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14"></path>
+                    <path d="M5 12h14"></path>
+                </svg>
+            </a>
+            <a class="tab-link"
+               th:classappend="${#strings.startsWith(path, '/companions')} ? ' active'"
+               th:href="@{/companions}"
+               th:attr="aria-label=#{navbar.companions}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
+                    <path d="M16 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
+                    <path d="M5 20c0-2.8 2.2-5 5-5"></path>
+                    <path d="M12 20c0-3.3 2.7-6 6-6 1.5 0 2.9.5 4 1.5"></path>
+                </svg>
+            </a>
+            <a class="tab-link"
+               th:classappend="${#strings.startsWith(path, '/profile')} ? ' active'"
+               th:href="@{'/profile/' + ${currentUsername}}"
+               th:attr="aria-label=#{navbar.profile}">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4"></circle>
+                    <path d="M4 20c1.7-3.3 4.4-5 8-5s6.3 1.7 8 5"></path>
+                </svg>
+            </a>
+        </div>
     </nav>
 </div>
 </body>
 </html>
-
